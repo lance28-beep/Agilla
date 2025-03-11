@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import './Dice.css';
 import { useGame } from '../context/GameContext';
 
 interface DiceProps {
@@ -46,14 +45,22 @@ export default function Dice({ onRollComplete }: DiceProps) {
       className={`
         w-20 h-20 text-4xl flex items-center justify-center
         rounded-lg border-2 border-gray-300 dark:border-gray-600
-        ${isRolling ? 'animate-spin-slow bg-gray-100 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'}
-        transition-all duration-200
-        ${!state.gameStarted || state.gameEnded ? 'opacity-50' : ''}
+        bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700
+        transform transition-all duration-300
+        ${isRolling ? 'animate-spin-slow bg-gray-100 dark:bg-gray-700' : ''}
+        ${!state.gameStarted || state.gameEnded ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
+        disabled:opacity-50 disabled:cursor-not-allowed
+        shadow-lg hover:shadow-xl
       `}
       role="img"
       aria-label={`Dice showing ${value}`}
     >
-      {getDiceFace(value)}
+      <span className={`
+        inline-block transform transition-transform duration-200
+        ${isRolling ? 'animate-bounce' : ''}
+      `}>
+        {getDiceFace(value)}
+      </span>
     </button>
   );
 } 

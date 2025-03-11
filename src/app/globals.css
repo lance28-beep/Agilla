@@ -61,6 +61,15 @@ body {
     }
   }
 
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out forwards;
   }
@@ -71,6 +80,10 @@ body {
 
   .animate-slideDown {
     animation: slideDown 0.5s ease-out forwards;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 1s linear infinite;
   }
 }
 
