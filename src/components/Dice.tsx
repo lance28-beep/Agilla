@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import './Dice.css';
 import { useGame } from '../context/GameContext';
 
 interface DiceProps {

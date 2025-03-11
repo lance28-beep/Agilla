@@ -9,7 +9,7 @@ import PlayerSetup from '../components/PlayerSetup';
 import GameControlModal from '../components/GameControlModal';
 import { questions, events } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
-import { EventCard, Space, SpaceType } from '../types/game';
+import { Space, SpaceType } from '../types/game';
 
 export default function Home() {
   const { state, dispatch } = useGame();
@@ -51,7 +51,6 @@ export default function Home() {
       type: 'info'
     });
     
-    const newPosition = Math.min(currentPlayer.position + value, 99);
     dispatch({ type: 'MOVE_PLAYER', payload: value });
     
     if (value === 6) {

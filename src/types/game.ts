@@ -2,10 +2,10 @@ export type Category = "Opportunity Cost" | "Trade-off" | "Marginal Thinking" | 
 
 export interface Question {
   id: number;
-  category: Category;
-  questionText: string;
+  text: string;
   options: string[];
   correctAnswer: string;
+  explanation?: string;
 }
 
 export interface EventCard {

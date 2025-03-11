@@ -5,12 +5,12 @@ import { EventCard } from '../types/game';
 
 interface EventModalProps {
   isOpen: boolean;
-  event: EventCard | null;
   onClose: () => void;
+  event: EventCard | null;
   onEffect: () => void;
 }
 
-export default function EventModal({ isOpen, event, onClose, onEffect }: EventModalProps) {
+export default function EventModal({ isOpen, onClose, event, onEffect }: EventModalProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -71,6 +71,23 @@ export default function EventModal({ isOpen, event, onClose, onEffect }: EventMo
             <h3 className="text-xl font-bold mb-2">Event Card</h3>
             <p>{event.description}</p>
           </div>
+        </div>
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => {
+              onEffect();
+              onClose();
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Apply Effect
+          </button>
         </div>
       </div>
     </div>
