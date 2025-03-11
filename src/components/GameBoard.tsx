@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useGame } from '../context/GameContext';
 import { Space } from '../types/game';
 
@@ -13,24 +13,6 @@ interface GameBoardProps {
 
 const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlayerPosition, canInteractWithSpace }) => {
   const { state } = useGame();
-
-  // Use useMemo to create stable space generation with 80% questions
-  const spacesMemo = useMemo(() => {
-    const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
-      if (index === 0) return { id: index, type: 'start' };
-      if (index === 99) return { id: index, type: 'finish' };
-      if (index % 20 === 0) return { id: index, type: 'checkpoint' };
-      
-      // Enhanced space distribution with 80% questions
-      const random = Math.random();
-      if (random < 0.80) return { id: index, type: 'question' };
-      if (random < 0.85) return { id: index, type: 'event' };
-      if (random < 0.90) return { id: index, type: 'powerup' };
-      if (random < 0.95) return { id: index, type: 'penalty' };
-      return { id: index, type: 'challenge' };
-    });
-    return spaces;
-  }, []); // Empty dependency array ensures spaces are generated once
 
   const getSpaceColor = (type: string, index: number) => {
     if (index === currentPlayerPosition) return 'bg-yellow-300 dark:bg-yellow-600';
@@ -122,7 +104,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
   return (
     <div className="w-full max-w-[1200px] mx-auto p-4 overflow-x-auto">
       <div className="grid grid-cols-10 gap-2 min-w-[1000px]">
-        {spacesMemo.map((space) => (
+        {spaces.map((space) => (
           <div
             key={space.id}
             onClick={() => handleSpaceClick(space)}
