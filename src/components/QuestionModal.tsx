@@ -85,7 +85,7 @@ export default function QuestionModal({ isOpen, onClose, question, onAnswer }: Q
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === option;
             const isCorrectAnswer = option === question.correctAnswer;
-            let optionStyle = `
+            const optionStyle = `
               w-full p-4 text-left rounded-lg transition-all duration-300
               flex items-center gap-3
               ${
