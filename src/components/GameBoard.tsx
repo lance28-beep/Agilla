@@ -5,16 +5,17 @@ import { useGame } from '../context/GameContext';
 import { Space } from '../types/game';
 
 interface GameBoardProps {
+  spaces: Space[];
   onSpaceClick: (spaceType: string) => void;
   currentPlayerPosition: number;
   canInteractWithSpace: boolean;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ onSpaceClick, currentPlayerPosition, canInteractWithSpace }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlayerPosition, canInteractWithSpace }) => {
   const { state } = useGame();
 
   // Use useMemo to create stable space generation with 80% questions
-  const spaces = useMemo(() => {
+  const spacesMemo = useMemo(() => {
     const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
       if (index === 0) return { id: index, type: 'start' };
       if (index === 99) return { id: index, type: 'finish' };
@@ -31,45 +32,80 @@ const GameBoard: React.FC<GameBoardProps> = ({ onSpaceClick, currentPlayerPositi
     return spaces;
   }, []); // Empty dependency array ensures spaces are generated once
 
-  const getSpaceColor = (type: string) => {
+  const getSpaceColor = (type: string, index: number) => {
+    if (index === currentPlayerPosition) return 'bg-yellow-300 dark:bg-yellow-600';
+    
     switch (type) {
-      case 'start': return 'bg-green-500';
-      case 'finish': return 'bg-red-500';
-      case 'checkpoint': return 'bg-yellow-500';
-      case 'question': return 'bg-blue-500';
-      case 'event': return 'bg-purple-500';
-      case 'powerup': return 'bg-cyan-500';
-      case 'penalty': return 'bg-rose-500';
-      case 'challenge': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+      case 'start':
+        return 'bg-green-500 dark:bg-green-700';
+      case 'finish':
+        return 'bg-red-500 dark:bg-red-700';
+      case 'question':
+        return 'bg-blue-500 dark:bg-blue-700';
+      case 'event':
+        return 'bg-purple-500 dark:bg-purple-700';
+      case 'powerup':
+        return 'bg-yellow-500 dark:bg-yellow-700';
+      case 'challenge':
+        return 'bg-orange-500 dark:bg-orange-700';
+      case 'checkpoint':
+        return 'bg-teal-500 dark:bg-teal-700';
+      case 'bonus':
+        return 'bg-emerald-500 dark:bg-emerald-700';
+      case 'penalty':
+        return 'bg-rose-500 dark:bg-rose-700';
+      default:
+        return 'bg-gray-500 dark:bg-gray-700';
     }
   };
 
   const getSpaceIcon = (type: string) => {
     switch (type) {
-      case 'start': return '🏁';
-      case 'finish': return '🎯';
-      case 'checkpoint': return '🚩';
-      case 'question': return '❓';
-      case 'event': return '⚡';
-      case 'powerup': return '🎮';
-      case 'penalty': return '⚠️';
-      case 'challenge': return '🎲';
-      default: return '';
+      case 'start':
+        return '🏁';
+      case 'finish':
+        return '🎯';
+      case 'question':
+        return '❓';
+      case 'event':
+        return '⚡';
+      case 'powerup':
+        return '⭐';
+      case 'challenge':
+        return '🎲';
+      case 'checkpoint':
+        return '🚩';
+      case 'bonus':
+        return '🎁';
+      case 'penalty':
+        return '⚠️';
+      default:
+        return '';
     }
   };
 
   const getSpaceTooltip = (type: string) => {
     switch (type) {
-      case 'start': return 'Starting Point - Begin your journey here!';
-      case 'finish': return 'Finish Line - Keep playing until someone reaches 100 points!';
-      case 'checkpoint': return 'Checkpoint - Earn 15 bonus points!';
-      case 'question': return 'Question Card - Answer correctly to earn 20 points!';
-      case 'event': return 'Event Card - Random events that can help or challenge you!';
-      case 'powerup': return 'Power-up Card - Get special abilities like double points or extra moves!';
-      case 'penalty': return 'Penalty Space - Lose 10 points unless you have a shield!';
-      case 'challenge': return 'Challenge Space - High risk, high reward! Win 30 points or lose 20!';
-      default: return '';
+      case 'start':
+        return 'Starting point';
+      case 'finish':
+        return 'Finish line - reach here to win!';
+      case 'question':
+        return 'Answer a question to earn points';
+      case 'event':
+        return 'Random event - could be good or bad!';
+      case 'powerup':
+        return 'Get a power-up to help you advance';
+      case 'challenge':
+        return 'Face a challenge for extra points';
+      case 'checkpoint':
+        return 'Safe spot - save your progress';
+      case 'bonus':
+        return 'Get bonus points or advantages';
+      case 'penalty':
+        return 'Watch out for penalties!';
+      default:
+        return '';
     }
   };
 
@@ -86,14 +122,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ onSpaceClick, currentPlayerPositi
   return (
     <div className="w-full max-w-[1200px] mx-auto p-4 overflow-x-auto">
       <div className="grid grid-cols-10 gap-2 min-w-[1000px]">
-        {spaces.map((space) => (
+        {spacesMemo.map((space) => (
           <div
             key={space.id}
             onClick={() => handleSpaceClick(space)}
             title={getSpaceTooltip(space.type)}
             className={`
               relative aspect-square rounded-lg shadow-md
-              ${getSpaceColor(space.type)}
+              ${getSpaceColor(space.type, space.id)}
               flex items-center justify-center
               border-2 border-gray-200
               transition-all duration-300
@@ -151,7 +187,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ onSpaceClick, currentPlayerPositi
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {['start', 'finish', 'checkpoint', 'question', 'event', 'powerup', 'penalty', 'challenge'].map((type) => (
             <div key={type} className="flex items-center gap-2 group relative">
-              <div className={`w-8 h-8 rounded-full ${getSpaceColor(type)} flex items-center justify-center`}>
+              <div className={`w-8 h-8 rounded-full ${getSpaceColor(type, 0)} flex items-center justify-center`}>
                 {getSpaceIcon(type)}
               </div>
               <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">
