@@ -25,7 +25,7 @@ export default function GameControlModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full">
         <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">
-          {currentPlayer.name}'s Turn
+          {currentPlayer.name}&apos;s Turn
         </h2>
         <div className="flex flex-col items-center gap-4">
           <Dice onRollComplete={onRollComplete} />

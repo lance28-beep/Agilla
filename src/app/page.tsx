@@ -261,6 +261,7 @@ export default function Home() {
             {/* Game Board */}
             <div className="relative animate-fadeIn">
               <GameBoard
+                spaces={spaces}
                 onSpaceClick={handleSpaceClick}
                 currentPlayerPosition={currentPlayer?.position || 0}
                 canInteractWithSpace={canInteractWithSpace}
