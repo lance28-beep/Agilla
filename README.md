@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AGILA Board Game
+
+An interactive digital version of the AGILA board game designed to test Grade 9 students' understanding of economic concepts through an engaging, turn-based format.
+
+## Features
+
+- Interactive game board with 40+ spaces
+- Multiple space types (Questions, Events, Bonus, Penalty, Checkpoints)
+- Support for 2-6 players
+- Dynamic dice rolling with animations
+- Economic concept questions covering:
+  - Opportunity Cost
+  - Trade-off
+  - Marginal Thinking
+  - Incentives
+  - Scarcity
+- Event cards with various effects
+- Real-time score tracking
+- Modern, responsive UI with Tailwind CSS
+
+## Tech Stack
+
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- React Context for state management
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/agila-app.git
+cd agila-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+## Game Rules
 
-To learn more about Next.js, take a look at the following resources:
+1. Players take turns rolling the dice
+2. Landing on different spaces triggers different events:
+   - Question Space: Answer economic questions (Correct: +2 steps, +1 point | Wrong: -1 step, -1 point)
+   - Event Space: Random events that affect gameplay
+   - Bonus Space: Move forward additional steps
+   - Penalty Space: Move backward or skip turns
+   - Checkpoint: Safe spaces for tracking progress
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Special Rules:
+   - Rolling a 6 grants an extra turn
+   - 3 consecutive wrong answers results in skipping a turn
+   - First player to reach the finish line wins
+   - In case of a tie, the player with the highest score wins
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development
 
-## Deploy on Vercel
+### Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/
+│   └── page.tsx         # Main game page
+├── components/
+│   ├── GameBoard.tsx    # Game board layout
+│   ├── Dice.tsx        # Dice rolling component
+│   ├── QuestionModal.tsx # Question display
+│   ├── EventModal.tsx   # Event card display
+│   └── PlayerSetup.tsx  # Player initialization
+├── context/
+│   └── GameContext.tsx  # Game state management
+├── types/
+│   └── game.ts         # TypeScript interfaces
+└── data/
+    └── gameData.ts     # Questions and events data
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Adding Questions
+
+To add more questions, edit `src/data/gameData.ts` and add new entries to the `questions` array following the Question interface:
+
+```typescript
+{
+  id: number;
+  category: "Opportunity Cost" | "Trade-off" | "Marginal Thinking" | "Incentives" | "Scarcity";
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

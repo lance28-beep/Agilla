@@ -24,3 +24,81 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.5s ease-out forwards;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* For IE and Edge */
+* {
+  -ms-overflow-style: none;
+}
+
+/* Ensure the root element doesn't scroll */
+html, body {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+/* Make the main content area scrollable if needed */
+main {
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+}
