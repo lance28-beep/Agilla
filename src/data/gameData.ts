@@ -4,7 +4,7 @@ export const questions: Question[] = [
   {
     id: 1,
     category: "Opportunity Cost",
-    questionText: "Ito ang tumutukoy sa alternatibong isinuko mo sa iyong pagpili.",
+    text: "Ito ang tumutukoy sa alternatibong isinuko mo sa iyong pagpili.",
     options: [
       "Marginal Thinking",
       "Trade-off",
@@ -16,7 +16,7 @@ export const questions: Question[] = [
   {
     id: 2,
     category: "Opportunity Cost",
-    questionText: "Pinili ni Ana na mag-aral kaysa manood ng sine. Ano ang opportunity cost sa kanyang desisyon?",
+    text: "Pinili ni Ana na mag-aral kaysa manood ng sine. Ano ang opportunity cost sa kanyang desisyon?",
     options: [
       "Oras na ginugol sa pag-aaral",
       "Pera para sa sine",
@@ -28,7 +28,7 @@ export const questions: Question[] = [
   {
     id: 3,
     category: "Opportunity Cost",
-    questionText: "Ang isang magsasaka ay nagdesisyon na magtanim ng palay sa halip na mais. Ano ang opportunity cost?",
+    text: "Ang isang magsasaka ay nagdesisyon na magtanim ng palay sa halip na mais. Ano ang opportunity cost?",
     options: [
       "Kita sa pagtatanim ng palay",
       "Gastos sa pagbili ng binhi",
@@ -40,7 +40,7 @@ export const questions: Question[] = [
   {
     id: 4,
     category: "Opportunity Cost",
-    questionText: "Ang pagpili ng kurso sa kolehiyo ay isang halimbawa ng:",
+    text: "Ang pagpili ng kurso sa kolehiyo ay isang halimbawa ng:",
     options: [
       "Trade-off",
       "Scarcity",
@@ -52,7 +52,7 @@ export const questions: Question[] = [
   {
     id: 5,
     category: "Opportunity Cost",
-    questionText: "Kapag naglaan ng oras sa paglalaro imbis na mag-aral, ang opportunity cost ay:",
+    text: "Kapag naglaan ng oras sa paglalaro imbis na mag-aral, ang opportunity cost ay:",
     options: [
       "Kasiyahan sa paglalaro",
       "Marka sa pagsusulit",
@@ -64,7 +64,7 @@ export const questions: Question[] = [
   {
     id: 6,
     category: "Trade-off",
-    questionText: "Ang pagtanggap ng mas mababang sweldo kapalit ng mas maikling oras ng trabaho ay halimbawa ng:",
+    text: "Ang pagtanggap ng mas mababang sweldo kapalit ng mas maikling oras ng trabaho ay halimbawa ng:",
     options: [
       "Trade-off",
       "Scarcity",
@@ -76,7 +76,7 @@ export const questions: Question[] = [
   {
     id: 7,
     category: "Trade-off",
-    questionText: "Kapag pinili mong bumili ng cellphone imbis na damit, ano ang trade-off?",
+    text: "Kapag pinili mong bumili ng cellphone imbis na damit, ano ang trade-off?",
     options: [
       "Oras sa pag-aaral",
       "Pera para sa damit",
@@ -88,7 +88,7 @@ export const questions: Question[] = [
   {
     id: 8,
     category: "Trade-off",
-    questionText: "Ang desisyong mag-ipon kaysa gumastos ay isang halimbawa ng:",
+    text: "Ang desisyong mag-ipon kaysa gumastos ay isang halimbawa ng:",
     options: [
       "Trade-off",
       "Marginal Thinking",
@@ -100,7 +100,7 @@ export const questions: Question[] = [
   {
     id: 9,
     category: "Trade-off",
-    questionText: "Sa paggawa ng desisyon, ang pagtalikod sa isang pagpipilian ay tinatawag na:",
+    text: "Sa paggawa ng desisyon, ang pagtalikod sa isang pagpipilian ay tinatawag na:",
     options: [
       "Incentives",
       "Scarcity",
@@ -112,7 +112,7 @@ export const questions: Question[] = [
   {
     id: 10,
     category: "Marginal Thinking",
-    questionText: "Ang pagsusuri kung sulit bang bumili ng dagdag na pizza ay halimbawa ng:",
+    text: "Ang pagsusuri kung sulit bang bumili ng dagdag na pizza ay halimbawa ng:",
     options: [
       "Trade-off",
       "Marginal Thinking",
@@ -124,7 +124,7 @@ export const questions: Question[] = [
   {
     id: 11,
     category: "Marginal Thinking",
-    questionText: "Kapag iniisip kung sulit ang karagdagang gastos para sa premium subscription, ito ay:",
+    text: "Kapag iniisip kung sulit ang karagdagang gastos para sa premium subscription, ito ay:",
     options: [
       "Trade-off",
       "Marginal Thinking",
@@ -136,7 +136,7 @@ export const questions: Question[] = [
   {
     id: 12,
     category: "Marginal Thinking",
-    questionText: "Ang pagsusuri kung sulit bang mag-overtime ay halimbawa ng:",
+    text: "Ang pagsusuri kung sulit bang mag-overtime ay halimbawa ng:",
     options: [
       "Trade-off",
       "Marginal Thinking",
@@ -148,7 +148,7 @@ export const questions: Question[] = [
   {
     id: 13,
     category: "Incentives",
-    questionText: "Ang pagtanggap ng dagdag na sahod para sa overtime ay isang halimbawa ng:",
+    text: "Ang pagtanggap ng dagdag na sahod para sa overtime ay isang halimbawa ng:",
     options: [
       "Opportunity Cost",
       "Trade-off",
@@ -160,7 +160,7 @@ export const questions: Question[] = [
   {
     id: 14,
     category: "Incentives",
-    questionText: "Kapag nagbigay ang gobyerno ng diskwento sa buwis para sa mga negosyante, ito ay:",
+    text: "Kapag nagbigay ang gobyerno ng diskwento sa buwis para sa mga negosyante, ito ay:",
     options: [
       "Opportunity Cost",
       "Trade-off",
@@ -172,7 +172,7 @@ export const questions: Question[] = [
   {
     id: 15,
     category: "Incentives",
-    questionText: "Ang pagbibigay ng bonus para sa maagang pagbabayad ng utang ay:",
+    text: "Ang pagbibigay ng bonus para sa maagang pagbabayad ng utang ay:",
     options: [
       "Trade-off",
       "Incentives",
@@ -184,7 +184,7 @@ export const questions: Question[] = [
   {
     id: 16,
     category: "Incentives",
-    questionText: "Ang mga pagpipilian sa paggawa ng desisyon ay may magandang dulot. Ano ito?",
+    text: "Ang mga pagpipilian sa paggawa ng desisyon ay may magandang dulot. Ano ito?",
     options: [
       "Marginal Thinking",
       "Trade-off",
@@ -196,7 +196,7 @@ export const questions: Question[] = [
   {
     id: 17,
     category: "Scarcity",
-    questionText: "Ang limitadong suplay ng bigas sa merkado ay isang halimbawa ng:",
+    text: "Ang limitadong suplay ng bigas sa merkado ay isang halimbawa ng:",
     options: [
       "Trade-off",
       "Incentives",
@@ -208,7 +208,7 @@ export const questions: Question[] = [
   {
     id: 18,
     category: "Scarcity",
-    questionText: "Kapag maraming nagnanais ngunit kakaunti ang suplay, ito ay:",
+    text: "Kapag maraming nagnanais ngunit kakaunti ang suplay, ito ay:",
     options: [
       "Trade-off",
       "Scarcity",
@@ -220,7 +220,7 @@ export const questions: Question[] = [
   {
     id: 19,
     category: "Scarcity",
-    questionText: "Ang limitadong bilang ng classroom sa paaralan ay halimbawa ng:",
+    text: "Ang limitadong bilang ng classroom sa paaralan ay halimbawa ng:",
     options: [
       "Opportunity Cost",
       "Scarcity",
@@ -232,7 +232,7 @@ export const questions: Question[] = [
   {
     id: 20,
     category: "Scarcity",
-    questionText: "Ano ang pangunahing sanhi ng pagkakaroon ng scarcity?",
+    text: "Ano ang pangunahing sanhi ng pagkakaroon ng scarcity?",
     options: [
       "Walang katapusang kagustuhan at limitadong pinagkukunang-yaman",
       "Sobrang produksyon ng mga produkto",

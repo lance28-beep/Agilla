@@ -6,6 +6,7 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  category?: Category;
 }
 
 export interface EventCard {
