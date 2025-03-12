@@ -1,14 +1,28 @@
+'use client';
+
 type SoundEffect = 'roll' | 'correct' | 'incorrect' | 'move' | 'win' | 'click';
 
-class SoundManager {
+interface ISoundManager {
+  play(effect: SoundEffect): void;
+  toggleMute(): boolean;
+  setMute(mute: boolean): void;
+  isSoundMuted(): boolean;
+}
+
+class SoundManager implements ISoundManager {
   private sounds: Map<SoundEffect, HTMLAudioElement> = new Map();
   private isMuted: boolean = false;
+  private isInitialized: boolean = false;
 
   constructor() {
-    this.initializeSounds();
+    if (typeof window !== 'undefined') {
+      this.initializeSounds();
+    }
   }
 
   private initializeSounds() {
+    if (this.isInitialized) return;
+
     const soundFiles: Record<SoundEffect, string> = {
       roll: '/sounds/dice-roll.mp3',
       correct: '/sounds/correct-answer.mp3',
@@ -18,15 +32,27 @@ class SoundManager {
       click: '/sounds/click.mp3'
     };
 
-    Object.entries(soundFiles).forEach(([key, path]) => {
-      const audio = new Audio(path);
-      audio.preload = 'auto';
-      this.sounds.set(key as SoundEffect, audio);
-    });
+    try {
+      Object.entries(soundFiles).forEach(([key, path]) => {
+        if (typeof Audio !== 'undefined') {
+          const audio = new Audio(path);
+          audio.preload = 'auto';
+          this.sounds.set(key as SoundEffect, audio);
+        }
+      });
+      this.isInitialized = true;
+    } catch (error) {
+      console.warn('Failed to initialize audio:', error);
+    }
   }
 
   play(effect: SoundEffect) {
-    if (this.isMuted) return;
+    if (this.isMuted || typeof window === 'undefined') return;
+    
+    // Initialize sounds if not already done (in case constructor didn't run on client)
+    if (!this.isInitialized) {
+      this.initializeSounds();
+    }
     
     const sound = this.sounds.get(effect);
     if (sound) {
@@ -51,4 +77,19 @@ class SoundManager {
   }
 }
 
-export const soundManager = new SoundManager(); 
+let soundManager: ISoundManager;
+
+// Create the instance only on the client side
+if (typeof window !== 'undefined') {
+  soundManager = new SoundManager();
+} else {
+  // Provide a mock implementation for server-side rendering
+  soundManager = {
+    play: () => {},
+    toggleMute: () => false,
+    setMute: () => {},
+    isSoundMuted: () => false
+  };
+}
+
+export { soundManager }; 

@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
 interface DiceProps {
-  value: number;
-  isRolling: boolean;
   onRollComplete: (value: number) => void;
 }
 
-const Dice: React.FC<DiceProps> = ({ value, isRolling, onRollComplete }) => {
+const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
   const { state } = useGame();
+  const [isRolling, setIsRolling] = useState(false);
+  const [value, setValue] = useState(1);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 
   // Mapping of dice values to rotations for showing correct face
@@ -23,59 +23,97 @@ const Dice: React.FC<DiceProps> = ({ value, isRolling, onRollComplete }) => {
     6: { x: 180, y: 0, z: 0 },
   };
 
-  useEffect(() => {
-    if (isRolling) {
-      const rolls = 2; // Number of complete rotations
-      const duration = 1000; // Duration in milliseconds
-      const startTime = Date.now();
+  const roll = () => {
+    if (isRolling || !state.gameStarted || state.gameEnded) return;
 
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = elapsed / duration;
+    setIsRolling(true);
+    const finalValue = Math.floor(Math.random() * 6) + 1;
+    setValue(finalValue);
 
-        if (progress < 1) {
-          const rotationAmount = progress * 360 * rolls;
-          setRotation({
-            x: rotationAmount,
-            y: rotationAmount,
-            z: rotationAmount,
-          });
-          requestAnimationFrame(animate);
-        } else {
-          // Set final rotation for the correct face
-          setRotation(diceRotations[value as keyof typeof diceRotations]);
-          onRollComplete(value);
-        }
-      };
+    // Animate for 1 second
+    const startTime = Date.now();
+    const duration = 1000;
+    const rolls = 2;
 
-      requestAnimationFrame(animate);
-    }
-  }, [isRolling, value, onRollComplete]);
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = elapsed / duration;
 
-  const getDiceFace = (value: number) => {
-    const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    return faces[value - 1];
+      if (progress < 1) {
+        const rotationAmount = progress * 360 * rolls;
+        setRotation({
+          x: rotationAmount,
+          y: rotationAmount,
+          z: rotationAmount,
+        });
+        requestAnimationFrame(animate);
+      } else {
+        // Set final rotation for the correct face
+        setRotation(diceRotations[finalValue as keyof typeof diceRotations]);
+        setIsRolling(false);
+        onRollComplete(finalValue);
+      }
+    };
+
+    requestAnimationFrame(animate);
   };
 
   return (
-    <div className="dice-container perspective-1000 w-24 h-24 relative">
+    <button
+      onClick={roll}
+      disabled={isRolling || !state.gameStarted || state.gameEnded}
+      className={`
+        perspective-1000 w-24 h-24 relative
+        ${!state.gameStarted || state.gameEnded ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
+        transition-all duration-300
+      `}
+      aria-label="Roll dice"
+    >
       <div
-        className={`dice-3d w-full h-full relative transform-style-3d transition-transform duration-1000 ${
-          isRolling ? 'animate-spin-slow' : ''
-        }`}
+        className={`
+          w-full h-full relative transform-style-3d transition-transform duration-1000
+          ${isRolling ? 'animate-spin-slow' : ''}
+        `}
         style={{
           transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) rotateZ(${rotation.z}deg)`,
         }}
       >
-        {/* Dice faces */}
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform translate-z-12">1</div>
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-x-90 translate-z-12">2</div>
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y-90 translate-z-12">3</div>
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y--90 translate-z-12">4</div>
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-x--90 translate-z-12">5</div>
-        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y-180 translate-z-12">6</div>
+        {/* Dice faces with dots instead of numbers */}
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+        </div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg grid grid-cols-2 gap-8 p-4 transform rotate-x-90 translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full justify-self-end" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full justify-self-start self-end" />
+        </div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg grid grid-cols-3 gap-2 p-4 transform rotate-y-90 translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full justify-self-end" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full place-self-center" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full justify-self-start self-end" />
+        </div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg grid grid-cols-2 gap-4 p-4 transform rotate-y--90 translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+        </div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg grid grid-cols-3 gap-2 p-4 transform rotate-x--90 translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full place-self-center" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+        </div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg grid grid-cols-3 gap-2 p-4 transform rotate-y-180 translate-z-12">
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+          <div className="w-4 h-4 bg-gray-800 dark:bg-gray-200 rounded-full" />
+        </div>
       </div>
-    </div>
+    </button>
   );
 };
 

@@ -72,8 +72,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full transform transition-all duration-300 scale-100 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop with glass effect */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      
+      {/* Modal content */}
+      <div className="relative bg-white/90 dark:bg-gray-800/90 rounded-xl shadow-2xl max-w-2xl w-full transform transition-all duration-300 scale-100 animate-fadeIn backdrop-blur-md border border-white/20">
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
@@ -88,14 +92,16 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
                 {question.category}
               </span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               <span className={`
                 text-lg font-bold
                 ${timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-gray-600 dark:text-gray-400'}
               `}>
                 {timeLeft}s
               </span>
-              <span className="ml-2 text-yellow-500">+{question.points} pts</span>
+              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-sm font-medium">
+                +{question.points} pts
+              </span>
             </div>
           </div>
 
@@ -124,7 +130,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
 
           {/* Explanation */}
           {showExplanation && question.explanation && (
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg animate-slideUp">
+            <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-lg animate-slideUp backdrop-blur-sm">
               <h4 className="font-bold text-gray-800 dark:text-white mb-2">Explanation:</h4>
               <p className="text-gray-600 dark:text-gray-300">{question.explanation}</p>
             </div>
