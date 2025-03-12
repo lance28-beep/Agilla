@@ -8,7 +8,7 @@ interface QuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   question: Question;
-  onAnswer: (isCorrect: boolean, correctAnswer?: string, explanation?: string) => void;
+  onAnswer: (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => void;
 }
 
 const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question, onAnswer }) => {
@@ -43,12 +43,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
     
     soundManager.play(isCorrect ? 'correct' : 'incorrect');
     
+    const pointsAwarded = isCorrect ? question.points : -1;
+    
     setTimeout(() => {
       setShowExplanation(true);
     }, 1000);
 
     setTimeout(() => {
-      onAnswer(isCorrect, question.correctAnswer, question.explanation);
+      onAnswer(isCorrect, pointsAwarded, question.correctAnswer, question.explanation);
     }, 3000);
   };
 

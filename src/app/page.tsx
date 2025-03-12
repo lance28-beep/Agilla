@@ -27,19 +27,17 @@ export default function Home() {
 
   const currentPlayer = state.players[state.currentPlayerIndex];
 
-  const spaces: Space[] = Array(100).fill(null).map((_, index): Space => {
-    if (index === 0) return { id: index, type: "start" };
-    if (index === 99) return { id: index, type: "finish" };
+  const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
+    if (index === 0) return { id: 0, type: 'start' };
+    if (index === 99) return { id: 99, type: 'finish' };
 
-    // Assign point values based on position
-    let points = 10; // default points
-    if (index % 17 === 0) points = 50; // Expert questions
-    else if (index % 11 === 0) points = 30; // Hard questions
-    else if (index % 7 === 0) points = 20; // Medium questions
+    let points = 1;
+    if (index % 15 === 0) points = 5;
+    else if (index % 7 === 0) points = 3;
 
     return {
       id: index,
-      type: "question",
+      type: 'question',
       points
     };
   });
@@ -66,24 +64,40 @@ export default function Home() {
     setShowGameControlModal(false);
   };
 
-  const handleQuestionAnswer = (isCorrect: boolean, correctAnswer?: string, explanation?: string) => {
+  const handleQuestionAnswer = (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => {
     if (isCorrect) {
-      setCommentary({ 
-        message: `Correct answer! ${currentPlayer.name} earned 10 points!`,
+      setCommentary({
+        message: `✅ Correct! You earned ${points} points!`,
         type: 'success'
       });
       dispatch({
         type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points: 10 }
+        payload: { playerId: currentPlayer.id, points }
       });
     } else {
-      setCommentary({ 
-        message: `Incorrect. The correct answer is: ${correctAnswer}. ${explanation || ''}`,
+      setCommentary({
+        message: `❌ Incorrect. You lost 1 point. The correct answer was: ${correctAnswer}`,
         type: 'error'
       });
+      dispatch({
+        type: 'UPDATE_SCORE',
+        payload: { playerId: currentPlayer.id, points }
+      });
     }
-    setShowQuestionModal(false);
-    handleNextPlayer();
+    
+    setTimeout(() => {
+      if (explanation) {
+        setCommentary({
+          message: `💡 ${explanation}`,
+          type: 'info'
+        });
+      }
+      
+      setTimeout(() => {
+        dispatch({ type: 'NEXT_PLAYER' });
+        setShowQuestionModal(false);
+      }, 3000);
+    }, 2000);
   };
 
   const handleEventEffect = () => {
