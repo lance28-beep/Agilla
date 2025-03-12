@@ -149,6 +149,7 @@ export default function Home() {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [lastRoll, setLastRoll] = useState<number | null>(null);
+  const [hasRolled, setHasRolled] = useState(false);
   const [canInteractWithSpace, setCanInteractWithSpace] = useState(false);
   const [commentary, setCommentary] = useState<{ message: string; type: 'success' | 'error' | 'info' }>({
     message: '',
@@ -175,6 +176,7 @@ export default function Home() {
 
   const handleRollComplete = (value: number) => {
     setLastRoll(value);
+    setHasRolled(true);
     soundManager.play('roll');
     setCommentary({ 
       message: `${currentPlayer.name} rolled a ${value}! Moving forward ${value} spaces.`,
@@ -264,10 +266,11 @@ export default function Home() {
 
   const handleNextPlayer = () => {
     setLastRoll(null);
+    setHasRolled(false);
     setCanInteractWithSpace(false);
     dispatch({ type: 'NEXT_PLAYER' });
-    setCommentary({ 
-      message: `It's ${state.players[(state.currentPlayerIndex + 1) % state.players.length].name}'s turn!`,
+    setCommentary({
+      message: `Next player's turn!`,
       type: 'info'
     });
   };
@@ -413,6 +416,8 @@ export default function Home() {
                 onRollComplete={handleRollComplete}
                 currentPlayer={currentPlayer}
                 lastRoll={lastRoll}
+                hasRolled={hasRolled}
+                onRollAttempt={() => setHasRolled(true)}
               />
             )}
 
