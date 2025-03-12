@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Question } from '../types/game';
 import { soundManager } from '../utils/soundEffects';
 
@@ -11,173 +11,110 @@ interface QuestionModalProps {
   onAnswer: (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => void;
 }
 
-const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question, onAnswer }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30); // 30 seconds timer
-  const [showExplanation, setShowExplanation] = useState(false);
+const QuestionModal: React.FC<QuestionModalProps> = ({
+  isOpen,
+  onClose,
+  question,
+  onAnswer
+}) => {
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [hasAnswered, setHasAnswered] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const handleAnswer = useCallback(() => {
+    if (!selectedOption || hasAnswered) return;
+
+    const correct = selectedOption === question.correctAnswer;
+    setIsCorrect(correct);
+    setHasAnswered(true);
+    soundManager.play(correct ? 'correct' : 'wrong');
+    onAnswer(correct, question.points, question.correctAnswer, question.explanation);
+  }, [selectedOption, hasAnswered, question, onAnswer]);
 
   useEffect(() => {
-    if (isOpen && !isAnswered) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleAnswer('');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+    if (selectedOption && !hasAnswered) {
+      handleAnswer();
     }
-  }, [isOpen, isAnswered]);
-
-  const handleAnswer = (answer: string) => {
-    if (isAnswered) return;
-    
-    setSelectedAnswer(answer);
-    setIsAnswered(true);
-    const isCorrect = answer === question.correctAnswer;
-    
-    soundManager.play(isCorrect ? 'correct' : 'incorrect');
-    
-    // Points between 1-5, -1 for incorrect
-    const pointsAwarded = isCorrect ? Math.min(Math.max(question.points || 1, 1), 5) : -1;
-    
-    setTimeout(() => {
-      setShowExplanation(true);
-    }, 1000);
-
-    setTimeout(() => {
-      onAnswer(isCorrect, pointsAwarded, question.correctAnswer, question.explanation);
-    }, 3000);
-  };
+  }, [selectedOption, hasAnswered, handleAnswer]);
 
   if (!isOpen) return null;
 
-  const getQuestionIcon = () => {
-    switch (question.category?.toLowerCase()) {
-      case 'opportunity cost':
-        return '💭';
-      case 'trade-off':
-        return '⚖️';
-      case 'marginal thinking':
-        return '🤔';
-      case 'incentives':
-        return '🎯';
-      case 'scarcity':
-        return '📊';
-      default:
-        return '❓';
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop with glass effect */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-      
-      {/* Modal content */}
-      <div className="relative bg-white/90 dark:bg-gray-800/90 rounded-xl shadow-2xl max-w-2xl w-full transform transition-all duration-300 scale-100 animate-fadeIn backdrop-blur-md border border-white/20">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <span className={`
-                inline-block px-3 py-1 rounded-full text-sm font-medium
-                ${getDifficultyColor(question.difficulty)}
-              `}>
-                {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
-              </span>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">
-                {question.category}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className={`
-                text-lg font-bold
-                ${timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-gray-600 dark:text-gray-400'}
-              `}>
-                {timeLeft}s
-              </span>
-              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-sm font-medium">
-                +{Math.min(Math.max(question.points || 1, 1), 5)} pts
-              </span>
-            </div>
-          </div>
-
-          {/* Question */}
-          <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-2xl w-full m-4 animate-scaleUp">
+        <div className="text-center mb-8">
+          <span className="text-4xl mb-4 block">❓</span>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
             {question.text}
-          </h3>
-
-          {/* Options */}
-          <div className="space-y-3">
-            {question.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                disabled={isAnswered}
-                className={`
-                  w-full p-4 text-left rounded-lg transition-all duration-300
-                  ${getOptionStyle(option, selectedAnswer, question.correctAnswer, isAnswered)}
-                  ${!isAnswered && 'hover:scale-102 hover:shadow-md'}
-                `}
-              >
-                <span className="font-medium">{String.fromCharCode(65 + index)}.</span> {option}
-              </button>
-            ))}
-          </div>
-
-          {/* Explanation */}
-          {showExplanation && question.explanation && (
-            <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-lg animate-slideUp backdrop-blur-sm">
-              <h4 className="font-bold text-gray-800 dark:text-white mb-2">Explanation:</h4>
-              <p className="text-gray-600 dark:text-gray-300">{question.explanation}</p>
-            </div>
-          )}
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Category: {question.category} • {question.points} points
+          </p>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          {question.options.map((option, index) => (
+            <button
+              key={index}
+              onClick={() => !hasAnswered && setSelectedOption(option)}
+              disabled={hasAnswered}
+              className={`
+                p-4 rounded-xl text-left transition-all duration-300 transform
+                ${hasAnswered
+                  ? option === question.correctAnswer
+                    ? 'bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300'
+                    : option === selectedOption
+                    ? 'bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-300'
+                    : 'bg-gray-100 dark:bg-gray-700/30 opacity-50'
+                  : selectedOption === option
+                  ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-500 text-blue-700 dark:text-blue-300 scale-105'
+                  : 'bg-gray-100 dark:bg-gray-700/30 hover:scale-105 hover:bg-gray-200 dark:hover:bg-gray-600/30'
+                }
+                border-2
+                ${hasAnswered
+                  ? option === question.correctAnswer
+                    ? 'border-green-500'
+                    : option === selectedOption
+                    ? 'border-red-500'
+                    : 'border-transparent'
+                  : selectedOption === option
+                  ? 'border-blue-500'
+                  : 'border-transparent'
+                }
+              `}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-lg font-semibold">{String.fromCharCode(65 + index)}.</span>
+                <span className="flex-1">{option}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {hasAnswered && (
+          <div className={`
+            p-4 rounded-xl mb-4
+            ${isCorrect 
+              ? 'bg-green-100 dark:bg-green-900/30 border-2 border-green-500' 
+              : 'bg-red-100 dark:bg-red-900/30 border-2 border-red-500'
+            }
+          `}>
+            <p className={`
+              font-medium mb-2
+              ${isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}
+            `}>
+              {isCorrect ? '✅ Correct!' : '❌ Incorrect!'}
+            </p>
+            {question.explanation && (
+              <p className="text-gray-600 dark:text-gray-400">
+                {question.explanation}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case 'easy':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case 'hard':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-    case 'expert':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-  }
-};
-
-const getOptionStyle = (
-  option: string,
-  selectedAnswer: string | null,
-  correctAnswer: string,
-  isAnswered: boolean
-) => {
-  if (!isAnswered) {
-    return 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600';
-  }
-
-  if (option === correctAnswer) {
-    return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-500';
-  }
-
-  if (option === selectedAnswer) {
-    return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border-red-500';
-  }
-
-  return 'bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-50';
 };
 
 export default QuestionModal; 

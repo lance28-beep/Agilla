@@ -9,13 +9,23 @@ import PlayerSetup from '../components/PlayerSetup';
 import GameControlModal from '../components/GameControlModal';
 import { questions, events } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
-import { Space, SpaceType } from '../types/game';
+import { Space } from '../types/game';
 import { soundManager } from '../utils/soundEffects';
 import SoundControl from '../components/SoundControl';
 import React from 'react';
 
+// Define player type
+interface Player {
+  id: number;
+  name: string;
+  token: string;
+  position: number;
+  score: number;
+  isSkippingTurn: boolean;
+}
+
 // Extracted PlayerStats component
-const PlayerStats = React.memo(({ player, isCurrentPlayer }: { player: any, isCurrentPlayer: boolean }) => (
+const PlayerStats = React.memo(({ player, isCurrentPlayer }: { player: Player, isCurrentPlayer: boolean }) => (
   <div
     className={`
       relative overflow-hidden p-4 md:p-5 rounded-xl shadow-lg 
@@ -82,7 +92,7 @@ const GameControls = React.memo(({
   onRollClick,
   onEndTurnClick 
 }: {
-  currentPlayer: any;
+  currentPlayer: Player;
   lastRoll: number | null;
   canInteractWithSpace: boolean;
   onRollClick: () => void;

@@ -4,6 +4,16 @@ import React, { useMemo, useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { Space } from '../types/game';
 
+// Add Player type
+interface Player {
+  id: number;
+  name: string;
+  token: string;
+  position: number;
+  score: number;
+  isSkippingTurn: boolean;
+}
+
 interface GameBoardProps {
   spaces: Space[];
   onSpaceClick: (spaceType: string) => void;
@@ -14,7 +24,6 @@ interface GameBoardProps {
 // Extracted types for better reusability
 type SpaceStyleProps = {
   type: string;
-  index: number;
   points?: number;
   isCurrentPosition?: boolean;
 };
@@ -22,7 +31,7 @@ type SpaceStyleProps = {
 // Memoized space style functions
 const useSpaceStyles = () => {
   return useMemo(() => ({
-    getSpaceColor: ({ type, index, points = 1, isCurrentPosition }: SpaceStyleProps) => {
+    getSpaceColor: ({ type, points = 1, isCurrentPosition }: SpaceStyleProps) => {
       if (isCurrentPosition) {
         return 'bg-yellow-300 dark:bg-yellow-500 animate-pulse';
       }
@@ -76,7 +85,7 @@ const BoardSpace = React.memo(({
   space: Space;
   isCurrentPosition: boolean;
   canInteract: boolean;
-  playersOnSpace: any[];
+  playersOnSpace: Player[];
   onSpaceClick: (space: Space) => void;
   currentPlayerIndex: number;
 }) => {
@@ -87,7 +96,7 @@ const BoardSpace = React.memo(({
       onClick={() => onSpaceClick(space)}
       className={`
         relative aspect-square rounded-xl border-2 border-white/20 dark:border-gray-700/20
-        ${styles.getSpaceColor({ type: space.type, index: space.id, points: space.points, isCurrentPosition })}
+        ${styles.getSpaceColor({ type: space.type, points: space.points, isCurrentPosition })}
         ${canInteract && isCurrentPosition 
           ? 'cursor-pointer hover:scale-110 hover:shadow-2xl hover:z-10' 
           : 'cursor-not-allowed'}
@@ -145,7 +154,7 @@ const LegendItem = React.memo(({ type, points, label }: { type: string; points: 
   
   return (
     <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-      <div className={`w-10 h-10 rounded-lg ${styles.getSpaceColor({ type, index: -1, points })} 
+      <div className={`w-10 h-10 rounded-lg ${styles.getSpaceColor({ type, points })} 
         flex items-center justify-center text-2xl
         transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300
         shadow-md group-hover:shadow-xl`}>
