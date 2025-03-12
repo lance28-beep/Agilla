@@ -1,37 +1,56 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
 interface DiceProps {
+  value: number;
+  isRolling: boolean;
   onRollComplete: (value: number) => void;
 }
 
-export default function Dice({ onRollComplete }: DiceProps) {
+const Dice: React.FC<DiceProps> = ({ value, isRolling, onRollComplete }) => {
   const { state } = useGame();
-  const [isRolling, setIsRolling] = useState(false);
-  const [value, setValue] = useState(1);
+  const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 
-  const roll = () => {
-    if (isRolling) return;
-    
-    setIsRolling(true);
-    const rolls = 10; // Number of animation frames
-    let currentRoll = 0;
-    
-    const rollInterval = setInterval(() => {
-      currentRoll++;
-      setValue(Math.floor(Math.random() * 6) + 1);
-      
-      if (currentRoll >= rolls) {
-        clearInterval(rollInterval);
-        const finalValue = Math.floor(Math.random() * 6) + 1;
-        setValue(finalValue);
-        setIsRolling(false);
-        onRollComplete(finalValue);
-      }
-    }, 100);
+  // Mapping of dice values to rotations for showing correct face
+  const diceRotations = {
+    1: { x: 0, y: 0, z: 0 },
+    2: { x: -90, y: 0, z: 0 },
+    3: { x: 0, y: 90, z: 0 },
+    4: { x: 0, y: -90, z: 0 },
+    5: { x: 90, y: 0, z: 0 },
+    6: { x: 180, y: 0, z: 0 },
   };
+
+  useEffect(() => {
+    if (isRolling) {
+      const rolls = 2; // Number of complete rotations
+      const duration = 1000; // Duration in milliseconds
+      const startTime = Date.now();
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = elapsed / duration;
+
+        if (progress < 1) {
+          const rotationAmount = progress * 360 * rolls;
+          setRotation({
+            x: rotationAmount,
+            y: rotationAmount,
+            z: rotationAmount,
+          });
+          requestAnimationFrame(animate);
+        } else {
+          // Set final rotation for the correct face
+          setRotation(diceRotations[value as keyof typeof diceRotations]);
+          onRollComplete(value);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }, [isRolling, value, onRollComplete]);
 
   const getDiceFace = (value: number) => {
     const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -39,28 +58,25 @@ export default function Dice({ onRollComplete }: DiceProps) {
   };
 
   return (
-    <button
-      onClick={roll}
-      disabled={isRolling}
-      className={`
-        w-20 h-20 text-4xl flex items-center justify-center
-        rounded-lg border-2 border-gray-300 dark:border-gray-600
-        bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700
-        transform transition-all duration-300
-        ${isRolling ? 'animate-spin-slow bg-gray-100 dark:bg-gray-700' : ''}
-        ${!state.gameStarted || state.gameEnded ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
-        disabled:opacity-50 disabled:cursor-not-allowed
-        shadow-lg hover:shadow-xl
-      `}
-      role="img"
-      aria-label={`Dice showing ${value}`}
-    >
-      <span className={`
-        inline-block transform transition-transform duration-200
-        ${isRolling ? 'animate-bounce' : ''}
-      `}>
-        {getDiceFace(value)}
-      </span>
-    </button>
+    <div className="dice-container perspective-1000 w-24 h-24 relative">
+      <div
+        className={`dice-3d w-full h-full relative transform-style-3d transition-transform duration-1000 ${
+          isRolling ? 'animate-spin-slow' : ''
+        }`}
+        style={{
+          transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) rotateZ(${rotation.z}deg)`,
+        }}
+      >
+        {/* Dice faces */}
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform translate-z-12">1</div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-x-90 translate-z-12">2</div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y-90 translate-z-12">3</div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y--90 translate-z-12">4</div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-x--90 translate-z-12">5</div>
+        <div className="dice-face absolute w-full h-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center transform rotate-y-180 translate-z-12">6</div>
+      </div>
+    </div>
   );
-} 
+};
+
+export default Dice; 

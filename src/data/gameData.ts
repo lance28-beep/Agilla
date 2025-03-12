@@ -364,6 +364,97 @@ export const questions: Question[] = [
     explanation: "Scarcity exists because of unlimited wants but limited resources.",
     difficulty: "hard",
     points: 30
+  },
+  // Additional questions
+  {
+    id: 25,
+    category: "Marginal Thinking",
+    text: "What is the marginal cost of producing one more unit?",
+    options: [
+      "The total cost of production",
+      "The additional cost of producing one more unit",
+      "The average cost per unit",
+      "The fixed cost of production"
+    ],
+    correctAnswer: "The additional cost of producing one more unit",
+    explanation: "Marginal cost is the additional cost incurred when producing one more unit of output.",
+    difficulty: "medium",
+    points: 20
+  },
+  {
+    id: 26,
+    category: "Incentives",
+    text: "How do economic incentives influence behavior?",
+    options: [
+      "They have no effect on behavior",
+      "They only affect rich people",
+      "They motivate people to act in predictable ways",
+      "They only work in developed countries"
+    ],
+    correctAnswer: "They motivate people to act in predictable ways",
+    explanation: "Economic incentives shape behavior by rewarding certain actions and discouraging others.",
+    difficulty: "hard",
+    points: 30
+  },
+  {
+    id: 27,
+    category: "Trade-off",
+    text: "In economics, what is meant by the term 'trade-off'?",
+    options: [
+      "International trade",
+      "Trading stocks",
+      "Giving up one thing to get another",
+      "Bartering goods"
+    ],
+    correctAnswer: "Giving up one thing to get another",
+    explanation: "A trade-off is the act of giving up one thing to obtain another, recognizing that choices have costs.",
+    difficulty: "easy",
+    points: 10
+  },
+  {
+    id: 28,
+    category: "Scarcity",
+    text: "Why is scarcity considered a fundamental economic problem?",
+    options: [
+      "Because resources are unlimited",
+      "Because people don't share resources",
+      "Because resources are limited but wants are unlimited",
+      "Because of government regulations"
+    ],
+    correctAnswer: "Because resources are limited but wants are unlimited",
+    explanation: "Scarcity exists because human wants exceed the limited resources available to satisfy those wants.",
+    difficulty: "expert",
+    points: 50
+  },
+  {
+    id: 29,
+    category: "Opportunity Cost",
+    text: "A student spends 3 hours playing video games instead of studying. What's the opportunity cost?",
+    options: [
+      "The cost of the video game",
+      "The potential knowledge and grades lost",
+      "The electricity used",
+      "The time spent playing"
+    ],
+    correctAnswer: "The potential knowledge and grades lost",
+    explanation: "The opportunity cost is the potential benefit (knowledge and grades) given up by choosing to play games.",
+    difficulty: "medium",
+    points: 20
+  },
+  {
+    id: 30,
+    category: "Incentives",
+    text: "Why do companies offer employee bonuses?",
+    options: [
+      "To waste money",
+      "To motivate better performance",
+      "Because they have to",
+      "To reduce profits"
+    ],
+    correctAnswer: "To motivate better performance",
+    explanation: "Bonuses serve as incentives to encourage employees to work harder and perform better.",
+    difficulty: "easy",
+    points: 10
   }
 ];
 

@@ -10,6 +10,8 @@ import GameControlModal from '../components/GameControlModal';
 import { questions, events } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
 import { Space, SpaceType } from '../types/game';
+import { soundManager } from '../utils/soundEffects';
+import SoundControl from '../components/SoundControl';
 
 export default function Home() {
   const { state, dispatch } = useGame();
@@ -44,12 +46,14 @@ export default function Home() {
 
   const handleRollComplete = (value: number) => {
     setLastRoll(value);
+    soundManager.play('roll');
     setCommentary({ 
       message: `${currentPlayer.name} rolled a ${value}! Moving forward ${value} spaces.`,
       type: 'info'
     });
     
     dispatch({ type: 'MOVE_PLAYER', payload: value });
+    soundManager.play('move');
     
     if (value === 6) {
       setCommentary({ 
@@ -147,6 +151,7 @@ export default function Home() {
   // Check for winner
   useEffect(() => {
     if (state.winner) {
+      soundManager.play('win');
       setCommentary({
         message: `🎉 Congratulations ${state.winner.name}! You've won the game with ${state.winner.score} points! 🎉`,
         type: 'success'
@@ -337,6 +342,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <SoundControl />
     </main>
   );
 }
