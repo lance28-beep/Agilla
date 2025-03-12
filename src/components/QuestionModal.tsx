@@ -43,7 +43,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
     
     soundManager.play(isCorrect ? 'correct' : 'incorrect');
     
-    const pointsAwarded = isCorrect ? question.points : -1;
+    // Points between 1-5, -1 for incorrect
+    const pointsAwarded = isCorrect ? Math.min(Math.max(question.points || 1, 1), 5) : -1;
     
     setTimeout(() => {
       setShowExplanation(true);
@@ -102,7 +103,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ isOpen, onClose, question
                 {timeLeft}s
               </span>
               <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-sm font-medium">
-                +{question.points} pts
+                +{Math.min(Math.max(question.points || 1, 1), 5)} pts
               </span>
             </div>
           </div>

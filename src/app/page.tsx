@@ -12,6 +12,126 @@ import GameCommentary from '../components/GameCommentary';
 import { Space, SpaceType } from '../types/game';
 import { soundManager } from '../utils/soundEffects';
 import SoundControl from '../components/SoundControl';
+import React from 'react';
+
+// Extracted PlayerStats component
+const PlayerStats = React.memo(({ player, isCurrentPlayer }: { player: any, isCurrentPlayer: boolean }) => (
+  <div
+    className={`
+      relative overflow-hidden p-4 md:p-5 rounded-xl shadow-lg 
+      transition-all duration-300 transform hover:shadow-2xl
+      ${isCurrentPlayer
+        ? 'bg-gradient-to-br from-indigo-50/90 to-purple-50/90 dark:from-indigo-900/50 dark:to-purple-900/50 scale-105 hover:scale-110'
+        : 'bg-white/90 dark:bg-gray-800/90 hover:scale-105'}
+    `}
+  >
+    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 opacity-50" />
+    
+    <div className="flex items-center gap-3">
+      <div className={`
+        w-12 h-12 rounded-xl flex items-center justify-center text-2xl
+        ${isCurrentPlayer 
+          ? 'bg-gradient-to-br from-yellow-300 to-yellow-400 animate-pulse shadow-lg' 
+          : 'bg-gradient-to-br from-gray-100 to-white dark:from-gray-700 dark:to-gray-600'}
+        font-bold border-2 border-current transition-all
+        ${isCurrentPlayer ? 'text-yellow-600' : 'text-gray-600 dark:text-gray-300'}
+      `}>
+        {player.token}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-lg text-gray-800 dark:text-white truncate">
+          {player.name}
+        </h3>
+        <div className="space-y-2 mt-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Score:</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-yellow-600 dark:text-yellow-400 text-lg">{player.score}</span>
+              <span className="text-yellow-500">⭐</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Position:</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-blue-600 dark:text-blue-400">{player.position + 1}</span>
+              <span className="text-blue-500">📍</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {player.isSkippingTurn && (
+      <div className="mt-3 py-2 px-3 bg-red-100 dark:bg-red-900/30 rounded-lg animate-pulse">
+        <p className="text-sm text-red-600 dark:text-red-400 font-medium flex items-center gap-2">
+          <span>⏭️</span>
+          Skipping Next Turn
+        </p>
+      </div>
+    )}
+  </div>
+));
+
+PlayerStats.displayName = 'PlayerStats';
+
+// Extracted GameControls component
+const GameControls = React.memo(({ 
+  currentPlayer, 
+  lastRoll, 
+  canInteractWithSpace,
+  onRollClick,
+  onEndTurnClick 
+}: {
+  currentPlayer: any;
+  lastRoll: number | null;
+  canInteractWithSpace: boolean;
+  onRollClick: () => void;
+  onEndTurnClick: () => void;
+}) => (
+  <div className="mb-6 md:mb-8 bg-white/90 dark:bg-gray-800/90 p-5 rounded-xl shadow-xl backdrop-blur-sm border border-white/20 dark:border-gray-700/20">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <div className="flex items-center gap-3">
+          <span className="text-xl font-bold text-gray-800 dark:text-white">
+            {currentPlayer?.name}
+          </span>
+          <span className="text-3xl animate-bounce">
+            {currentPlayer?.token}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+          <span className="font-medium">Score:</span>
+          <span className="font-bold text-yellow-600 dark:text-yellow-400">{currentPlayer?.score || 0}</span>
+          <span className="text-yellow-500">⭐</span>
+        </div>
+      </div>
+      <div className="flex gap-3 md:gap-4 w-full sm:w-auto justify-center sm:justify-end">
+        <button
+          onClick={onRollClick}
+          disabled={!currentPlayer || currentPlayer.isSkippingTurn}
+          className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg
+                    hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
+                    transition-all transform hover:scale-105 hover:shadow-lg active:scale-95
+                    font-semibold tracking-wide"
+        >
+          Roll Dice 🎲
+        </button>
+        <button
+          onClick={onEndTurnClick}
+          disabled={!lastRoll || !canInteractWithSpace}
+          className="px-6 py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg
+                    hover:from-gray-600 hover:to-gray-700 disabled:opacity-50 disabled:cursor-not-allowed
+                    transition-all transform hover:scale-105 hover:shadow-lg active:scale-95
+                    font-semibold tracking-wide"
+        >
+          End Turn ➡️
+        </button>
+      </div>
+    </div>
+  </div>
+));
+
+GameControls.displayName = 'GameControls';
 
 export default function Home() {
   const { state, dispatch } = useGame();
@@ -31,13 +151,14 @@ export default function Home() {
     if (index === 0) return { id: 0, type: 'start' };
     if (index === 99) return { id: 99, type: 'finish' };
 
-    let points = 1;
-    if (index % 15 === 0) points = 5;
-    else if (index % 7 === 0) points = 3;
+    // Assign point values between 1 and 5
+    let points = 1; // default points
+    if (index % 15 === 0) points = 5; // Expert questions (every 15th space)
+    else if (index % 7 === 0) points = 3; // Medium questions (every 7th space)
 
     return {
       id: index,
-      type: 'question',
+      type: "question",
       points
     };
   });
@@ -66,8 +187,8 @@ export default function Home() {
 
   const handleQuestionAnswer = (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => {
     if (isCorrect) {
-      setCommentary({
-        message: `✅ Correct! You earned ${points} points!`,
+      setCommentary({ 
+        message: `✅ Correct answer! ${currentPlayer.name} earned ${points} points!`,
         type: 'success'
       });
       dispatch({
@@ -75,13 +196,13 @@ export default function Home() {
         payload: { playerId: currentPlayer.id, points }
       });
     } else {
-      setCommentary({
-        message: `❌ Incorrect. You lost 1 point. The correct answer was: ${correctAnswer}`,
+      setCommentary({ 
+        message: `❌ Incorrect. You lost 1 point. The correct answer is: ${correctAnswer}`,
         type: 'error'
       });
       dispatch({
         type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points }
+        payload: { playerId: currentPlayer.id, points: -1 }
       });
     }
     
@@ -94,8 +215,8 @@ export default function Home() {
       }
       
       setTimeout(() => {
-        dispatch({ type: 'NEXT_PLAYER' });
         setShowQuestionModal(false);
+        handleNextPlayer();
       }, 3000);
     }, 2000);
   };
@@ -174,15 +295,49 @@ export default function Home() {
   }, [state.winner]);
 
   return (
-    <main className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col overflow-hidden">
-      <div className="container mx-auto px-4 py-4 md:py-8 flex-grow relative">
-        <div className="text-center mb-6 md:mb-8 animate-fadeIn">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-800 dark:text-white">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col overflow-hidden">
+      <div className="container mx-auto px-4 py-6 md:py-8 flex-grow relative">
+        {/* Game Header */}
+        <div className="text-center mb-8 md:mb-10 animate-fadeIn">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             AGILA Board Game
           </h1>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            An interactive educational game that teaches economic principles through engaging gameplay.
-            Learn about opportunity cost, trade-offs, and more while having fun!
+          
+          {/* Minimal AGILA Header */}
+          <div className="max-w-xl mx-auto mb-6">
+            <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-sm">
+              <div className="flex items-center justify-center divide-x divide-gray-200 dark:divide-gray-700">
+                {[
+                  { letter: 'A', word: 'Araling Panlipunan', icon: '📚' },
+                  { letter: 'G', word: 'Game-based', icon: '🎮' },
+                  { letter: 'I', word: 'Interactive', icon: '🤝' },
+                  { letter: 'L', word: 'Learning', icon: '🎓' },
+                  { letter: 'A', word: 'Activities', icon: '✨' }
+                ].map(({ letter, word, icon }, index) => (
+                  <div 
+                    key={index}
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors"
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center text-sm font-bold bg-blue-500 text-white rounded">
+                      {letter}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 hidden sm:inline">
+                        {word}
+                      </span>
+                      <span className="text-base">
+                        {icon}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Game Description - Super Compact */}
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+            An educational journey through interactive gameplay
           </p>
         </div>
 
@@ -192,77 +347,25 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Enhanced Scoreboard */}
-            <div className="mb-4 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-fadeIn">
+            {/* Enhanced Player Stats Grid */}
+            <div className="mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fadeIn">
               {state.players.map((player) => (
-                <div
+                <PlayerStats
                   key={player.id}
-                  className={`
-                    p-3 md:p-4 rounded-lg shadow-md transition-all duration-300 transform
-                    ${state.currentPlayerIndex === player.id - 1
-                      ? 'bg-indigo-100 dark:bg-indigo-900 scale-105 hover:scale-110'
-                      : 'bg-white dark:bg-gray-800 hover:scale-105'}
-                  `}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`
-                      w-8 h-8 rounded-full flex items-center justify-center
-                      ${state.currentPlayerIndex === player.id - 1 
-                        ? 'bg-yellow-300 animate-pulse shadow-lg' 
-                        : 'bg-white'}
-                      text-lg font-bold border-2 border-gray-800 transition-all
-                    `}>
-                      {player.token}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 dark:text-white truncate">{player.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Score: {player.score}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Position: {player.position + 1}</p>
-                    </div>
-                  </div>
-                  {player.isSkippingTurn && (
-                    <p className="text-sm text-red-500 mt-1 font-medium animate-pulse">
-                      ⏭️ Skipping Next Turn
-                    </p>
-                  )}
-                </div>
+                  player={player}
+                  isCurrentPlayer={state.currentPlayerIndex === player.id - 1}
+                />
               ))}
             </div>
 
-            {/* Game Controls Section */}
-            <div className="mb-4 md:mb-8 bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow-lg transition-all hover:shadow-xl">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4">
-                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                  <div className="text-base md:text-lg font-semibold text-gray-800 dark:text-white text-center sm:text-left">
-                    Current Player: {currentPlayer?.name}
-                    <span className="ml-2 text-xl md:text-2xl animate-bounce inline-block">
-                      {currentPlayer?.token}
-                    </span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300">
-                    Score: {currentPlayer?.score || 0}
-                  </div>
-                </div>
-                <div className="flex gap-3 md:gap-4 w-full sm:w-auto justify-center sm:justify-end">
-                  <button
-                    onClick={() => setShowGameControlModal(true)}
-                    disabled={!currentPlayer || currentPlayer.isSkippingTurn}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 
-                             transition-all transform hover:scale-105 hover:shadow-lg active:scale-95"
-                  >
-                    Roll Dice
-                  </button>
-                  <button
-                    onClick={handleNextPlayer}
-                    disabled={!lastRoll || !canInteractWithSpace}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 
-                             transition-all transform hover:scale-105 hover:shadow-lg active:scale-95"
-                  >
-                    End Turn
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* Game Controls */}
+            <GameControls
+              currentPlayer={currentPlayer}
+              lastRoll={lastRoll}
+              canInteractWithSpace={canInteractWithSpace}
+              onRollClick={() => setShowGameControlModal(true)}
+              onEndTurnClick={handleNextPlayer}
+            />
 
             {/* Game Commentary */}
             {commentary.message && (
@@ -314,19 +417,30 @@ export default function Home() {
             )}
 
             {state.gameEnded && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full">
-                  <h2 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full m-4 animate-scaleUp">
+                  <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     Game Over!
                   </h2>
-                  <p className="text-center mb-6 text-gray-600 dark:text-gray-300">
-                    {state.winner ? `${state.winner.name} wins with ${state.winner.score} points!` : "It's a tie!"}
+                  <p className="text-center mb-6 text-gray-600 dark:text-gray-300 text-lg">
+                    {state.winner ? (
+                      <>
+                        <span className="font-bold text-2xl text-yellow-500">🏆</span>
+                        <br />
+                        <span className="font-semibold">{state.winner.name}</span> wins with{' '}
+                        <span className="font-bold text-yellow-600 dark:text-yellow-400">{state.winner.score}</span> points!
+                      </>
+                    ) : "It's a tie!"}
                   </p>
                   <button
                     onClick={() => window.location.reload()}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 
+                             text-white rounded-xl font-semibold tracking-wide
+                             hover:from-indigo-700 hover:to-purple-700 
+                             transform hover:scale-105 transition-all duration-300
+                             shadow-lg hover:shadow-xl active:scale-95"
                   >
-                    Play Again
+                    Play Again 🎮
                   </button>
                 </div>
               </div>
@@ -336,15 +450,15 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 shadow-lg mt-4 md:mt-8 animate-fadeIn">
+      <footer className="bg-white/90 dark:bg-gray-800/90 shadow-lg mt-4 md:mt-8 animate-fadeIn">
         <div className="container mx-auto px-4 py-4 md:py-6">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="text-gray-600 dark:text-gray-300 mb-2">
               Developed by{' '}
               <a
                 href="https://lance28-beep.github.io/portfolio-website"
-          target="_blank"
-          rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
               >
                 Lance
