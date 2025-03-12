@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Dice from './Dice';
 
 interface Player {
@@ -27,6 +27,17 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
   currentPlayer,
   lastRoll
 }) => {
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (countdown !== null && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
   if (!isOpen) return null;
 
   return (
@@ -37,19 +48,28 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
             {currentPlayer.name}'s Turn
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {lastRoll ? `Last roll: ${lastRoll}` : 'Click the dice to roll!'}
+            {lastRoll ? `Last roll: ${lastRoll}` : countdown !== null ? `Rolling in ${countdown}...` : 'Click the dice to roll!'}
           </p>
           
           <div className="flex justify-center mb-6">
-            <Dice onRollComplete={onRollComplete} />
+            <Dice onRollComplete={(value) => {
+              setCountdown(3);
+              onRollComplete(value);
+            }} />
           </div>
 
           <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white
-                     transition-colors text-sm"
+            onClick={() => {
+              setCountdown(3);
+              onRollComplete(Math.floor(Math.random() * 6) + 1);
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 
+                     text-white rounded-lg font-semibold tracking-wide
+                     hover:from-blue-600 hover:to-blue-700 
+                     transform hover:scale-105 transition-all duration-300
+                     shadow-lg hover:shadow-xl active:scale-95"
           >
-            Cancel
+            Roll the Dice 🎲
           </button>
         </div>
       </div>

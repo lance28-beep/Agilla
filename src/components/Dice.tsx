@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface DiceProps {
@@ -18,7 +18,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
     
     // Simulate rolling through numbers quickly
     let rollCount = 0;
-    const maxRolls = 15; // Increased number of rolls for smoother animation
+    const maxRolls = 30; // Increased for 3 seconds duration
     const finalResult = Math.floor(Math.random() * 6) + 1;
     
     const rollInterval = setInterval(() => {
@@ -32,7 +32,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
         // Show random numbers while rolling
         setCurrentValue(Math.floor(Math.random() * 6) + 1);
       }
-    }, 80); // Faster rolling speed (was 100ms)
+    }, 100); // 30 rolls * 100ms = 3 seconds total
   };
 
   const dots = Array(currentValue).fill(0);
@@ -65,7 +65,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
       }}
       transition={{ 
         duration: 0.5,
-        repeat: isRolling ? 3 : 0
+        repeat: isRolling ? 5 : 0 // Increased repeats for longer animation
       }}
       className={`
         w-20 h-20 bg-white dark:bg-gray-800
