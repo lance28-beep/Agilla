@@ -15,15 +15,21 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
   const { state } = useGame();
 
   const getSpaceColor = (type: string, index: number) => {
-    if (index === currentPlayerPosition) return 'bg-yellow-300 dark:bg-yellow-600';
-    
+    if (index === currentPlayerPosition) {
+      return 'bg-yellow-300 dark:bg-yellow-500 animate-pulse';
+    }
+
     switch (type) {
       case 'start':
-        return 'bg-green-500 dark:bg-green-700';
+        return 'bg-green-400 dark:bg-green-600';
       case 'finish':
-        return 'bg-red-500 dark:bg-red-700';
+        return 'bg-red-400 dark:bg-red-600';
       case 'question':
-        return 'bg-blue-500 dark:bg-blue-700';
+        const points = spaces[index].points || 10;
+        if (points >= 50) return 'bg-purple-400 dark:bg-purple-600';
+        if (points >= 30) return 'bg-blue-400 dark:bg-blue-600';
+        if (points >= 20) return 'bg-indigo-400 dark:bg-indigo-600';
+        return 'bg-cyan-400 dark:bg-cyan-600';
       case 'event':
         return 'bg-purple-500 dark:bg-purple-700';
       case 'powerup':
@@ -37,17 +43,20 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
       case 'penalty':
         return 'bg-rose-500 dark:bg-rose-700';
       default:
-        return 'bg-gray-500 dark:bg-gray-700';
+        return 'bg-gray-200 dark:bg-gray-700';
     }
   };
 
-  const getSpaceIcon = (type: string) => {
+  const getSpaceIcon = (type: string, points?: number) => {
     switch (type) {
       case 'start':
-        return '🏁';
+        return '🚀';
       case 'finish':
-        return '🎯';
+        return '🏁';
       case 'question':
+        if (points && points >= 50) return '⭐';
+        if (points && points >= 30) return '💫';
+        if (points && points >= 20) return '✨';
         return '❓';
       case 'event':
         return '⚡';
@@ -62,18 +71,18 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
       case 'penalty':
         return '⚠️';
       default:
-        return '';
+        return '❓';
     }
   };
 
-  const getSpaceTooltip = (type: string) => {
+  const getSpaceTooltip = (type: string, points?: number) => {
     switch (type) {
       case 'start':
-        return 'Starting point';
+        return 'Start - Begin your journey!';
       case 'finish':
-        return 'Finish line - reach here to win!';
+        return 'Finish - Win the game!';
       case 'question':
-        return 'Answer a question to earn points';
+        return `Question - ${points || 10} points`;
       case 'event':
         return 'Random event - could be good or bad!';
       case 'powerup':
@@ -87,7 +96,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
       case 'penalty':
         return 'Watch out for penalties!';
       default:
-        return '';
+        return 'Unknown space';
     }
   };
 
@@ -108,57 +117,27 @@ const GameBoard: React.FC<GameBoardProps> = ({ spaces, onSpaceClick, currentPlay
           <div
             key={space.id}
             onClick={() => handleSpaceClick(space)}
-            title={getSpaceTooltip(space.type)}
             className={`
               relative aspect-square rounded-lg shadow-md
               ${getSpaceColor(space.type, space.id)}
-              flex items-center justify-center
-              border-2 border-gray-200
-              transition-all duration-300
-              ${space.id === currentPlayerPosition && 'ring-4 ring-indigo-500 ring-offset-2 scale-110'}
-              ${
-                canInteractWithSpace && space.id === currentPlayerPosition && !['start', 'finish'].includes(space.type)
-                  ? 'cursor-pointer hover:opacity-80 hover:scale-105'
-                  : space.id === currentPlayerPosition
-                    ? 'cursor-default'
-                    : 'opacity-50 cursor-not-allowed'
-              }
+              ${canInteractWithSpace ? 'cursor-pointer hover:scale-105 hover:shadow-lg' : 'cursor-not-allowed opacity-75'}
+              transition-all duration-300 ease-out
+              flex items-center justify-center text-2xl
               group
             `}
+            title={getSpaceTooltip(space.type, space.points)}
           >
-            {/* Space number */}
-            <span className="absolute top-1 left-1 text-xs text-white font-bold">
-              {space.id + 1}
+            <span className="transform group-hover:scale-125 transition-transform">
+              {getSpaceIcon(space.type, space.points)}
             </span>
-            
-            {/* Space icon */}
-            <span className="text-xl" role="img" aria-label={space.type}>
-              {getSpaceIcon(space.type)}
-            </span>
-
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-              {getSpaceTooltip(space.type)}
-            </div>
-
-            {/* Player tokens */}
-            <div className="absolute bottom-1 left-1 flex flex-wrap gap-1 max-w-[80%]">
-              {getPlayerTokens(space.id).map((player) => (
-                <div
-                  key={player.id}
-                  className={`
-                    w-6 h-6 rounded-full flex items-center justify-center
-                    ${state.currentPlayerIndex === player.id - 1 ? 'bg-yellow-300 animate-pulse' : 'bg-white'}
-                    text-sm font-bold border-2 border-gray-800 shadow-md
-                    transform transition-transform
-                    ${state.currentPlayerIndex === player.id - 1 && 'scale-125'}
-                  `}
-                  title={`${player.name}'s token`}
-                >
-                  {player.token}
-                </div>
-              ))}
-            </div>
+            {space.points && space.type === 'question' && (
+              <span className="absolute bottom-1 right-1 text-xs font-bold bg-white dark:bg-gray-800 rounded-full px-1">
+                {space.points}
+              </span>
+            )}
+            {space.id === currentPlayerPosition && (
+              <div className="absolute inset-0 bg-yellow-300 dark:bg-yellow-500 opacity-50 rounded-lg animate-pulse" />
+            )}
           </div>
         ))}
       </div>

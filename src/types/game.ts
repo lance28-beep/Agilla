@@ -1,12 +1,16 @@
 export type Category = "Opportunity Cost" | "Trade-off" | "Marginal Thinking" | "Incentives" | "Scarcity";
 
+export type Difficulty = "easy" | "medium" | "hard" | "expert";
+
 export interface Question {
   id: number;
   text: string;
   options: string[];
   correctAnswer: string;
   explanation?: string;
-  category?: Category;
+  category: Category;
+  difficulty: Difficulty;
+  points: number;
 }
 
 export interface EventCard {
@@ -39,18 +43,10 @@ export interface GameState {
   currentEvent: EventCard | null;
 }
 
-export type SpaceType = 
-  | "question" 
-  | "event" 
-  | "bonus" 
-  | "penalty" 
-  | "checkpoint" 
-  | "start" 
-  | "finish"
-  | "powerup"
-  | "challenge";
+export type SpaceType = "question" | "start" | "finish";
 
 export interface Space {
   id: number;
   type: SpaceType;
+  points?: number;
 } 

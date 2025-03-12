@@ -26,21 +26,19 @@ export default function Home() {
   const currentPlayer = state.players[state.currentPlayerIndex];
 
   const spaces: Space[] = Array(100).fill(null).map((_, index): Space => {
-    let type: SpaceType;
-    if (index === 0) type = "start";
-    else if (index === 99) type = "finish";
-    else if (index % 5 === 0) type = "question";
-    else if (index % 7 === 0) type = "event";
-    else if (index % 11 === 0) type = "powerup";
-    else if (index % 13 === 0) type = "challenge";
-    else if (index % 20 === 0) type = "checkpoint";
-    else if (index % 15 === 0) type = "bonus";
-    else if (index % 17 === 0) type = "penalty";
-    else type = "question"; // Make 80% of remaining spaces questions
+    if (index === 0) return { id: index, type: "start" };
+    if (index === 99) return { id: index, type: "finish" };
+
+    // Assign point values based on position
+    let points = 10; // default points
+    if (index % 17 === 0) points = 50; // Expert questions
+    else if (index % 11 === 0) points = 30; // Hard questions
+    else if (index % 7 === 0) points = 20; // Medium questions
 
     return {
       id: index,
-      type
+      type: "question",
+      points
     };
   });
 
@@ -326,8 +324,8 @@ export default function Home() {
               Developed by{' '}
               <a
                 href="https://lance28-beep.github.io/portfolio-website"
-                target="_blank"
-                rel="noopener noreferrer"
+          target="_blank"
+          rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
               >
                 Lance
