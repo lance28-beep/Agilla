@@ -197,13 +197,15 @@ export default function Home() {
 
   const handleQuestionAnswer = (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => {
     if (isCorrect) {
+      // Ensure points are between 1-5
+      const awardedPoints = Math.min(Math.max(points, 1), 5);
       setCommentary({ 
-        message: `✅ Correct answer! ${currentPlayer.name} earned ${points} points!`,
+        message: `✅ Correct answer! ${currentPlayer.name} earned ${awardedPoints} points!`,
         type: 'success'
       });
       dispatch({
         type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points }
+        payload: { playerId: currentPlayer.id, points: awardedPoints }
       });
     } else {
       setCommentary({ 
@@ -280,6 +282,12 @@ export default function Home() {
           dispatch({ type: 'RESET_USED_QUESTIONS' });
         }
         const question = unusedQuestions[Math.floor(Math.random() * unusedQuestions.length)];
+        // Ensure question points are between 1-5
+        if (question.points > 5) {
+          question.points = 5;
+        } else if (question.points < 1) {
+          question.points = 1;
+        }
         dispatch({ type: 'SET_CURRENT_QUESTION', payload: question });
         setShowQuestionModal(true);
         break;

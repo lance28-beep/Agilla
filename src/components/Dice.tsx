@@ -18,7 +18,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
     
     // Simulate rolling through numbers quickly
     let rollCount = 0;
-    const maxRolls = 10; // Number of rapid changes before settling
+    const maxRolls = 15; // Increased number of rolls for smoother animation
     const finalResult = Math.floor(Math.random() * 6) + 1;
     
     const rollInterval = setInterval(() => {
@@ -32,7 +32,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
         // Show random numbers while rolling
         setCurrentValue(Math.floor(Math.random() * 6) + 1);
       }
-    }, 100); // Change number every 100ms while rolling
+    }, 80); // Faster rolling speed (was 100ms)
   };
 
   const dots = Array(currentValue).fill(0);
@@ -57,26 +57,36 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete }) => {
   };
 
   return (
-    <div
+    <motion.div
       onClick={handleRoll}
+      animate={{ 
+        scale: isRolling ? [1, 0.9, 1.1, 0.9, 1] : 1,
+        rotate: isRolling ? [0, -10, 10, -10, 0] : 0
+      }}
+      transition={{ 
+        duration: 0.5,
+        repeat: isRolling ? 3 : 0
+      }}
       className={`
         w-20 h-20 bg-white dark:bg-gray-800
         rounded-lg cursor-pointer select-none
         flex flex-wrap p-4 gap-2
         ${getDotPositions(currentValue)}
-        ${isRolling ? 'animate-bounce' : ''}
         transition-all duration-200
         hover:bg-gray-50 dark:hover:bg-gray-700
         shadow-md border border-gray-200 dark:border-gray-700
       `}
     >
       {dots.map((_, i) => (
-        <span
+        <motion.span
           key={i}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.2 }}
           className="w-3 h-3 rounded-full bg-gray-800 dark:bg-gray-200"
         />
       ))}
-    </div>
+    </motion.div>
   );
 };
 
