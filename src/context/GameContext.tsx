@@ -29,8 +29,11 @@ const initialState: GameState = {
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
+  console.log("GameReducer action:", action.type, action);
+  
   switch (action.type) {
     case 'START_GAME':
+      console.log("Starting game with players:", action.payload);
       return {
         ...state,
         players: action.payload,
