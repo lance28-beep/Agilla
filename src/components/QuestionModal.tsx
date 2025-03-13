@@ -17,7 +17,6 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   question,
   onAnswer
 }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);

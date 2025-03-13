@@ -185,15 +185,7 @@ export default function Home() {
     
     dispatch({ type: 'MOVE_PLAYER', payload: value });
     soundManager.play('move');
-    
-    if (value === 6) {
-      setCommentary({ 
-        message: `${currentPlayer.name} rolled a 6! They get another turn!`,
-        type: 'success'
-      });
-    } else {
-      setCanInteractWithSpace(true);
-    }
+    setCanInteractWithSpace(true);
     setShowGameControlModal(false);
   };
 
@@ -270,13 +262,19 @@ export default function Home() {
     setCanInteractWithSpace(false);
     dispatch({ type: 'NEXT_PLAYER' });
     setCommentary({
-      message: `Next player&apos;s turn!`,
+      message: `Next player's turn!`,
       type: 'info'
     });
   };
 
   const handleSpaceClick = (spaceType: string) => {
-    if (!canInteractWithSpace) return;
+    if (!hasRolled || !canInteractWithSpace) {
+      setCommentary({
+        message: "Please roll the dice first!",
+        type: 'error'
+      });
+      return;
+    }
     
     switch (spaceType) {
       case 'question':
@@ -285,19 +283,17 @@ export default function Home() {
           dispatch({ type: 'RESET_USED_QUESTIONS' });
         }
         const question = unusedQuestions[Math.floor(Math.random() * unusedQuestions.length)];
-        // Ensure question points are between 1-5
-        if (question.points > 5) {
-          question.points = 5;
-        } else if (question.points < 1) {
-          question.points = 1;
+        if (question) {
+          dispatch({ type: 'SET_CURRENT_QUESTION', payload: question });
+          setShowQuestionModal(true);
+          setCanInteractWithSpace(false);
         }
-        dispatch({ type: 'SET_CURRENT_QUESTION', payload: question });
-        setShowQuestionModal(true);
         break;
       case 'event':
         const event = events[Math.floor(Math.random() * events.length)];
         dispatch({ type: 'SET_CURRENT_EVENT', payload: event });
         setShowEventModal(true);
+        setCanInteractWithSpace(false);
         break;
       default:
         handleNextPlayer();

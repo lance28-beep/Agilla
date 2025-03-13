@@ -62,15 +62,20 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
     }
   };
 
-  const handleRoll = (value: number) => {
+  const handleRoll = () => {
     if (hasRolled) {
       setShowError(true);
       setTimeout(() => setShowError(false), 2000);
       return;
     }
+    
     onRollAttempt();
-    setCountdown(3);
-    onRollComplete(value);
+    const result = Math.floor(Math.random() * 6) + 1;
+    
+    // Add a small delay before completing the roll
+    setTimeout(() => {
+      onRollComplete(result);
+    }, 1000);
   };
 
   const getPositionMessage = () => {
