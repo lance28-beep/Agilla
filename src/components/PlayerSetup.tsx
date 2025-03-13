@@ -19,8 +19,7 @@ const PlayerSetup: React.FC = () => {
     }
   ]);
 
-  // Simple handler functions without event parameters
-  const handleAddPlayer = () => {
+  function addPlayer() {
     console.log("Adding player");
     if (players.length < 6) {
       setPlayers([...players, { 
@@ -32,23 +31,23 @@ const PlayerSetup: React.FC = () => {
         isSkippingTurn: false
       }]);
     }
-  };
+  }
 
-  const handleRemovePlayer = (index: number) => {
+  function removePlayer(index: number) {
     console.log("Removing player at index", index);
     if (players.length > 1) {
       setPlayers(players.filter((_, i) => i !== index));
     }
-  };
+  }
 
-  const handleUpdatePlayer = (index: number, field: keyof Omit<Player, 'id'>, value: string) => {
+  function updatePlayer(index: number, field: keyof Omit<Player, 'id'>, value: string) {
     console.log("Updating player", index, field, value);
     const newPlayers = [...players];
     newPlayers[index] = { ...newPlayers[index], [field]: value };
     setPlayers(newPlayers);
-  };
+  }
 
-  const handleStartGame = () => {
+  function startGame() {
     console.log("Start game clicked");
     
     // Validate player data
@@ -78,7 +77,7 @@ const PlayerSetup: React.FC = () => {
       type: 'START_GAME',
       payload: playersWithIds
     });
-  };
+  }
 
   return (
     <div className="max-w-lg mx-auto p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl transition-all hover:shadow-2xl transform hover:scale-[1.02]">
@@ -119,7 +118,7 @@ const PlayerSetup: React.FC = () => {
               type="text"
               placeholder="Player Name"
               value={player.name}
-              onChange={(e) => handleUpdatePlayer(index, 'name', e.target.value)}
+              onChange={(e) => updatePlayer(index, 'name', e.target.value)}
               className="flex-1 p-2 border rounded bg-white dark:bg-gray-600 dark:border-gray-500 dark:text-white 
                        transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               maxLength={20}
@@ -128,7 +127,7 @@ const PlayerSetup: React.FC = () => {
             <div className="relative w-full sm:w-24">
               <select
                 value={player.token}
-                onChange={(e) => handleUpdatePlayer(index, 'token', e.target.value)}
+                onChange={(e) => updatePlayer(index, 'token', e.target.value)}
                 className="w-full sm:w-24 p-2 pl-10 text-lg border rounded bg-white dark:bg-gray-600 dark:border-gray-500 
                          dark:text-white appearance-none cursor-pointer transition-all
                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -146,8 +145,7 @@ const PlayerSetup: React.FC = () => {
             </div>
 
             <button
-              type="button"
-              onClick={() => handleRemovePlayer(index)}
+              onClick={() => removePlayer(index)}
               disabled={players.length === 1}
               className="p-2 text-red-500 hover:bg-red-50 rounded disabled:opacity-50 dark:hover:bg-red-900
                        transition-all transform hover:scale-110 active:scale-95"
@@ -161,8 +159,7 @@ const PlayerSetup: React.FC = () => {
 
       <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
         <button
-          type="button"
-          onClick={handleAddPlayer}
+          onClick={addPlayer}
           disabled={players.length >= 6}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 
                    transition-all transform hover:scale-105 hover:shadow-lg active:scale-95"
@@ -171,8 +168,7 @@ const PlayerSetup: React.FC = () => {
         </button>
 
         <button
-          type="button"
-          onClick={handleStartGame}
+          onClick={startGame}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 
                    transition-all transform hover:scale-105 hover:shadow-lg active:scale-95"
         >
