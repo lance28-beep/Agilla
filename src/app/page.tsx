@@ -316,17 +316,27 @@ export default function Home() {
   }, [state.winner]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-hidden relative">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5 dark:opacity-10" />
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
+      </div>
+
       <div className="container mx-auto px-4 py-6 md:py-8 flex-grow relative">
-        {/* Game Header */}
+        {/* Game Header with Enhanced Styling */}
         <div className="text-center mb-8 md:mb-10 animate-fadeIn">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             AGILA Board Game
           </h1>
           
-          {/* Minimal AGILA Header */}
+          {/* Enhanced AGILA Header */}
           <div className="max-w-xl mx-auto mb-6">
-            <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-sm">
+            <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center justify-center divide-x divide-gray-200 dark:divide-gray-700">
                 {[
                   { letter: 'A', word: 'Araling Panlipunan', icon: '📚' },
@@ -337,9 +347,9 @@ export default function Home() {
                 ].map(({ letter, word, icon }, index) => (
                   <div 
                     key={index}
-                    className="flex-1 flex items-center justify-center gap-1.5 p-2 group hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 group hover:bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700/30 dark:to-gray-600/30 transition-all duration-300"
                   >
-                    <div className="w-6 h-6 flex items-center justify-center text-sm font-bold bg-blue-500 text-white rounded">
+                    <div className="w-6 h-6 flex items-center justify-center text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded">
                       {letter}
                     </div>
                     <div className="flex items-center gap-1">
@@ -356,8 +366,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Game Description - Super Compact */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+          {/* Enhanced Game Description */}
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center mb-6 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full inline-block backdrop-blur-sm">
             An educational journey through interactive gameplay
           </p>
         </div>
@@ -379,7 +389,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Game Controls */}
+            {/* Enhanced Game Controls */}
             <GameControls
               currentPlayer={currentPlayer}
               lastRoll={lastRoll}
@@ -388,7 +398,7 @@ export default function Home() {
               onEndTurnClick={handleNextPlayer}
             />
 
-            {/* Game Commentary */}
+            {/* Enhanced Game Commentary */}
             {commentary.message && (
               <div className="animate-slideDown">
                 <GameCommentary
@@ -399,7 +409,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Game Board */}
+            {/* Enhanced Game Board */}
             <div className="relative animate-fadeIn">
               <GameBoard
                 spaces={spaces}
@@ -441,8 +451,8 @@ export default function Home() {
 
             {state.gameEnded && (
               <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full m-4 animate-scaleUp">
-                  <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="bg-white/90 dark:bg-gray-800/90 p-8 rounded-2xl shadow-2xl max-w-md w-full m-4 animate-scaleUp backdrop-blur-lg border border-white/20">
+                  <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                     Game Over!
                   </h2>
                   <p className="text-center mb-6 text-gray-600 dark:text-gray-300 text-lg">
@@ -457,9 +467,9 @@ export default function Home() {
                   </p>
                   <button
                     onClick={() => window.location.reload()}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 
                              text-white rounded-xl font-semibold tracking-wide
-                             hover:from-indigo-700 hover:to-purple-700 
+                             hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 
                              transform hover:scale-105 transition-all duration-300
                              shadow-lg hover:shadow-xl active:scale-95"
                   >
@@ -472,20 +482,20 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white/90 dark:bg-gray-800/90 shadow-lg mt-4 md:mt-8 animate-fadeIn">
+      {/* Enhanced Footer */}
+      <footer className="bg-white/90 dark:bg-gray-800/90 shadow-lg mt-4 md:mt-8 animate-fadeIn backdrop-blur-sm border-t border-white/20 dark:border-gray-700/20">
         <div className="container mx-auto px-4 py-4 md:py-6">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="text-gray-600 dark:text-gray-300 mb-2">
               Developed by{' '}
               <a
                 href="https://lance28-beep.github.io/portfolio-website"
-            target="_blank"
-            rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
-          >
+              >
                 Lance
-          </a>
+              </a>
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Requested project by: Maam Lyne C. Villegas
