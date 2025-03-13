@@ -8,6 +8,7 @@ interface QuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   question: Question;
+  spacePoints?: number;
   onAnswer: (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => void;
 }
 
@@ -15,6 +16,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   isOpen,
   onClose,
   question,
+  spacePoints = 1,
   onAnswer
 }) => {
   const [isAnswered, setIsAnswered] = useState(false);
@@ -214,7 +216,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 >
                   {isCorrect ? '✨ Excellent!' : '💡 Keep Learning!'} 
                   {isCorrect ? (
-                    <span className="text-sm">+{question.points} points</span>
+                    <span className="text-sm">+{spacePoints} points</span>
                   ) : (
                     <span className="text-sm">Correct answer: {question.correctAnswer}</span>
                   )}

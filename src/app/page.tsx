@@ -206,13 +206,20 @@ export default function Home() {
         payload: { playerId: currentPlayer.id, points: spacePoints }
       });
     } else {
+      // Check if player has points to lose
+      const playerCurrentScore = currentPlayer.score || 0;
+      const pointsToLose = playerCurrentScore > 0 ? -1 : 0;
+      
       setCommentary({ 
-        message: `❌ Incorrect. You lost 1 point. The correct answer is: ${correctAnswer}`,
+        message: pointsToLose < 0 
+          ? `❌ Incorrect. You lost 1 point. The correct answer is: ${correctAnswer}`
+          : `❌ Incorrect. The correct answer is: ${correctAnswer}`,
         type: 'error'
       });
+      
       dispatch({
         type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points: -1 }
+        payload: { playerId: currentPlayer.id, points: pointsToLose }
       });
     }
     
@@ -435,6 +442,7 @@ export default function Home() {
                 isOpen={showQuestionModal}
                 onClose={() => setShowQuestionModal(false)}
                 question={state.currentQuestion}
+                spacePoints={spaces[currentPlayer.position].points || 1}
                 onAnswer={handleQuestionAnswer}
               />
             )}
