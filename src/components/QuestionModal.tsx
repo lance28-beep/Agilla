@@ -31,12 +31,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     setSelectedAnswer(answer);
     setIsAnswered(true);
     setIsCorrect(correct);
-    onAnswer(correct, question.points, question.correctAnswer, question.explanation);
+    onAnswer(correct, spacePoints, question.correctAnswer, question.explanation);
     // Close modal after answering
     setTimeout(() => {
       onClose();
     }, 5000);
-  }, [isAnswered, question.correctAnswer, question.points, question.explanation, onAnswer, onClose]);
+  }, [isAnswered, question.correctAnswer, spacePoints, question.explanation, onAnswer, onClose]);
 
   // Timer effect
   useEffect(() => {
@@ -138,7 +138,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
               <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                {question.points} points
+                {spacePoints} points
               </span>
             </div>
           </div>
