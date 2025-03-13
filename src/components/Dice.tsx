@@ -237,11 +237,12 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete, disabled = false }) => {
         ))}
       </motion.div>
 
+      {/* Roll status label */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-full px-3 py-1"
+        className="mt-4 text-center"
       >
         <span className={`text-sm font-medium ${disabled ? 'text-red-500' : 'text-blue-500'}`}>
           {disabled ? '🚫 No more rolls' : '🎲 Click to roll!'}
