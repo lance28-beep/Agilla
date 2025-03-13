@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
 import { GameState, Player, Question, EventCard } from '../types/game';
 
 type GameAction =
@@ -13,8 +13,7 @@ type GameAction =
   | { type: 'MARK_QUESTION_USED'; payload: number }
   | { type: 'SKIP_TURN'; payload: number }
   | { type: 'RESET_USED_QUESTIONS' }
-  | { type: 'CHECK_WIN_CONDITION' }
-  | { type: 'END_GAME' };
+  | { type: 'CHECK_WIN_CONDITION' };
 
 const initialState: GameState = {
   players: [],
@@ -29,27 +28,23 @@ const initialState: GameState = {
   currentEvent: null
 };
 
-const STORAGE_KEY = 'agila_game_state';
-
 const gameReducer = (state: GameState, action: GameAction): GameState => {
-  let newState: GameState = state;
-
   switch (action.type) {
     case 'START_GAME':
-      newState = {
-        ...initialState,
+      return {
+        ...state,
         players: action.payload,
         gameStarted: true,
+        gameEnded: false,
+        winner: null
       };
-      break;
 
     case 'NEXT_PLAYER':
       const nextIndex = (state.currentPlayerIndex + 1) % state.players.length;
-      newState = {
+      return {
         ...state,
         currentPlayerIndex: nextIndex
       };
-      break;
 
     case 'MOVE_PLAYER':
       const updatedPlayers = state.players.map((player, index) => {
@@ -59,8 +54,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
         return player;
       });
-      newState = { ...state, players: updatedPlayers };
-      break;
+      return { ...state, players: updatedPlayers };
 
     case 'UPDATE_SCORE':
       const playersWithUpdatedScore = state.players.map(player => {
@@ -71,29 +65,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
         return player;
       });
-      newState = { ...state, players: playersWithUpdatedScore };
-      break;
+      return { ...state, players: playersWithUpdatedScore };
 
     case 'SET_CURRENT_QUESTION':
-      newState = {
-        ...state,
-        currentQuestion: action.payload,
-        usedQuestionIds: new Set([...state.usedQuestionIds, action.payload.id]),
-      };
-      break;
+      return { ...state, currentQuestion: action.payload };
 
     case 'SET_CURRENT_EVENT':
-      newState = {
-        ...state,
-        currentEvent: action.payload,
-      };
-      break;
+      return { ...state, currentEvent: action.payload };
 
     case 'MARK_QUESTION_USED':
       const newUsedQuestionIds = new Set(state.usedQuestionIds);
       newUsedQuestionIds.add(action.payload);
-      newState = { ...state, usedQuestionIds: newUsedQuestionIds };
-      break;
+      return { ...state, usedQuestionIds: newUsedQuestionIds };
 
     case 'SKIP_TURN':
       const playersWithSkip = state.players.map(player => {
@@ -102,52 +85,25 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
         return { ...player, isSkippingTurn: false };
       });
-      newState = { ...state, players: playersWithSkip };
-      break;
+      return { ...state, players: playersWithSkip };
 
     case 'RESET_USED_QUESTIONS':
-      newState = { ...state, usedQuestionIds: new Set() };
-      break;
+      return { ...state, usedQuestionIds: new Set() };
 
     case 'CHECK_WIN_CONDITION':
       const playerWith100Points = state.players.find(player => player.score >= 100);
       if (playerWith100Points) {
-        newState = {
+        return {
           ...state,
           gameEnded: true,
           winner: playerWith100Points
         };
       }
-      break;
-
-    case 'END_GAME':
-      const maxScore = Math.max(...state.players.map((p) => p.score));
-      const winners = state.players.filter((p) => p.score === maxScore);
-      newState = {
-        ...state,
-        gameEnded: true,
-        winner: winners.length === 1 ? winners[0] : null,
-      };
-      break;
+      return state;
 
     default:
       return state;
   }
-
-  // Check for winner after any state change
-  if (!newState.gameEnded) {
-    const maxScore = Math.max(...newState.players.map((p) => p.score));
-    const winners = newState.players.filter((p) => p.score === maxScore);
-    if (winners.length === 1) {
-      newState = {
-        ...newState,
-        gameEnded: true,
-        winner: winners[0],
-      };
-    }
-  }
-
-  return newState;
 };
 
 const GameContext = createContext<{
@@ -157,32 +113,6 @@ const GameContext = createContext<{
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-
-  // Load state from localStorage on mount
-  useEffect(() => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    if (savedState) {
-      const parsedState = JSON.parse(savedState);
-      // Convert usedQuestionIds back to Set
-      parsedState.usedQuestionIds = new Set(parsedState.usedQuestionIds);
-      dispatch({ type: 'START_GAME', payload: parsedState.players });
-      // Restore other state properties
-      Object.entries(parsedState).forEach(([key, value]) => {
-        if (key !== 'players') {
-          dispatch({ type: key as any, payload: value as any });
-        }
-      });
-    }
-  }, []);
-
-  // Save state to localStorage on every change
-  useEffect(() => {
-    const stateToSave = {
-      ...state,
-      usedQuestionIds: Array.from(state.usedQuestionIds),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [state]);
 
   return (
     <GameContext.Provider value={{ state, dispatch }}>

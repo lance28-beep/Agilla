@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { Space } from '../types/game';
+import { motion } from 'framer-motion';
 
 // Add Player type
 interface Player {
@@ -98,13 +99,22 @@ const BoardSpace = React.memo(({
         relative aspect-square rounded-xl border-2 border-white/20 dark:border-gray-700/20
         ${styles.getSpaceColor({ type: space.type, points: space.points, isCurrentPosition })}
         ${canInteract && isCurrentPosition 
-          ? 'cursor-pointer hover:scale-110 hover:shadow-2xl hover:z-10' 
+          ? 'cursor-pointer hover:scale-110 hover:shadow-2xl hover:z-10 ring-2 ring-yellow-400/50 dark:ring-yellow-500/50' 
           : 'cursor-not-allowed'}
         transition-all duration-300 ease-out transform
         flex items-center justify-center text-3xl
         group shadow-lg hover:shadow-xl
+        ${isCurrentPosition ? 'animate-pulse-slow' : ''}
       `}
       title={styles.getSpaceTooltip(space.type, space.points)}
+      role="button"
+      aria-label={`${space.type} space${space.points ? ` worth ${space.points} points` : ''}`}
+      tabIndex={canInteract && isCurrentPosition ? 0 : -1}
+      onKeyDown={(e) => {
+        if (canInteract && isCurrentPosition && (e.key === 'Enter' || e.key === ' ')) {
+          onSpaceClick(space);
+        }
+      }}
     >
       <span className="transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">
         {styles.getSpaceIcon(space.type)}
@@ -114,8 +124,11 @@ const BoardSpace = React.memo(({
       {playersOnSpace.length > 0 && (
         <div className="absolute -top-2 -left-2 flex flex-wrap gap-1.5 max-w-[80%]">
           {playersOnSpace.map((player) => (
-            <span
+            <motion.span
               key={player.id}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", duration: 0.5 }}
               className={`
                 w-7 h-7 rounded-full flex items-center justify-center text-base
                 ${player.id === currentPlayerIndex + 1 
@@ -124,24 +137,35 @@ const BoardSpace = React.memo(({
                 border-2 border-gray-800 font-bold
                 transform hover:scale-125 transition-transform z-20
                 shadow-md hover:shadow-xl
+                ${player.isSkippingTurn ? 'opacity-50' : ''}
               `}
-              title={`${player.name}`}
+              title={`${player.name}${player.isSkippingTurn ? ' (Skipping next turn)' : ''}`}
             >
               {player.token}
-            </span>
+            </motion.span>
           ))}
         </div>
       )}
 
       {/* Points indicator */}
       {space.type !== 'start' && space.type !== 'finish' && (
-        <span className="absolute -bottom-1 -right-1 text-sm font-bold 
-          bg-white dark:bg-gray-800 rounded-full w-6 h-6 flex items-center justify-center
-          border-2 border-current shadow-lg group-hover:scale-110 transition-transform
-          text-blue-600 dark:text-blue-400">
+        <motion.span 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="absolute -bottom-1 -right-1 text-sm font-bold 
+            bg-white dark:bg-gray-800 rounded-full w-6 h-6 flex items-center justify-center
+            border-2 border-current shadow-lg group-hover:scale-110 transition-transform
+            text-blue-600 dark:text-blue-400"
+        >
           {space.points || 1}
-        </span>
+        </motion.span>
       )}
+
+      {/* Space number */}
+      <span className="absolute top-1 left-1 text-xs font-bold text-gray-700 dark:text-gray-300 opacity-50">
+        {space.id + 1}
+      </span>
     </div>
   );
 });
@@ -211,13 +235,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
 }) => {
   const { state } = useGame();
   const [showRollPrompt, setShowRollPrompt] = useState(false);
+  const [highlightedSpaces, setHighlightedSpaces] = useState<number[]>([]);
+
+  // Highlight possible landing spaces
+  useEffect(() => {
+    if (canInteractWithSpace) {
+      const possibleSpaces = [currentPlayerPosition];
+      setHighlightedSpaces(possibleSpaces);
+    } else {
+      setHighlightedSpaces([]);
+    }
+  }, [currentPlayerPosition, canInteractWithSpace]);
 
   const getPlayerTokens = (spaceId: number) => {
     return state.players.filter(player => player.position === spaceId);
   };
 
   const handleSpaceClick = (space: Space) => {
-    // Show prompt if trying to interact without rolling
     if (space.id === currentPlayerPosition && !canInteractWithSpace) {
       setShowRollPrompt(true);
       return;
@@ -239,7 +273,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <>
-      <div className="w-full max-w-[1200px] mx-auto p-4 md:p-6 overflow-x-auto bg-gradient-to-br from-white/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl shadow-xl backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-[1200px] mx-auto p-4 md:p-6 overflow-x-auto bg-gradient-to-br from-white/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl shadow-xl backdrop-blur-sm"
+      >
         <div className="grid grid-cols-10 gap-3 min-w-[1000px] p-4 relative">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 rounded-xl" />
           
@@ -256,23 +295,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
           ))}
         </div>
 
-        {/* Space Type Legend */}
-        <div className="mt-8 bg-white/80 dark:bg-gray-800/80 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-700/20">
-          <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Board Guide
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {legendItems.map((item) => (
-              <LegendItem key={`${item.type}-${item.points}`} {...item} />
+        {/* Legend */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mt-6 p-4 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-lg backdrop-blur-sm"
+        >
+          <h3 className="text-lg font-bold mb-3 text-gray-800 dark:text-white">Space Types</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {legendItems.map((item, index) => (
+              <LegendItem key={index} {...item} />
             ))}
           </div>
-        </div>
-      </div>
-      
-      <RollPromptDialog 
-        isOpen={showRollPrompt} 
-        onClose={() => setShowRollPrompt(false)} 
-      />
+        </motion.div>
+      </motion.div>
+
+      <RollPromptDialog isOpen={showRollPrompt} onClose={() => setShowRollPrompt(false)} />
     </>
   );
 };
