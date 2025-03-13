@@ -59,7 +59,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'UPDATE_SCORE':
       const playersWithUpdatedScore = state.players.map(player => {
         if (player.id === action.payload.playerId) {
-          return { ...player, score: player.score + action.payload.points };
+          const currentScore = typeof player.score === 'number' ? player.score : 0;
+          const points = typeof action.payload.points === 'number' ? action.payload.points : 0;
+          return { ...player, score: currentScore + points };
         }
         return player;
       });

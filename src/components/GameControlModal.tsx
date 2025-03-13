@@ -132,7 +132,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
           >
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white bg-clip-text">
-              {currentPlayer.name}'s Turn
+              {currentPlayer.name}&apos;s Turn
             </h2>
             <span className="text-3xl animate-bounce">
               {currentPlayer.token}

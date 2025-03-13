@@ -270,7 +270,7 @@ export default function Home() {
     setCanInteractWithSpace(false);
     dispatch({ type: 'NEXT_PLAYER' });
     setCommentary({
-      message: `Next player's turn!`,
+      message: `Next player&apos;s turn!`,
       type: 'info'
     });
   };

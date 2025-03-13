@@ -18,7 +18,7 @@ export default function PlayerSetup() {
         name: '', 
         token: '', 
         position: 0, 
-        score: 0, 
+        score: 0,
         consecutiveWrongAnswers: 0,
         isSkippingTurn: false
       }]);

@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Question } from '../types/game';
-import { soundManager } from '../utils/soundEffects';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuestionModalProps {
   isOpen: boolean;
+  onClose: () => void;
   question: Question;
-  onAnswer: (isCorrect: boolean) => void;
+  onAnswer: (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => void;
 }
 
 const QuestionModal: React.FC<QuestionModalProps> = ({
   isOpen,
+  onClose,
   question,
   onAnswer
 }) => {
@@ -22,15 +23,15 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimeWarning, setIsTimeWarning] = useState(false);
 
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = useCallback((answer: string) => {
     if (isAnswered) return;
     
     const correct = answer === question.correctAnswer;
     setSelectedAnswer(answer);
     setIsAnswered(true);
     setIsCorrect(correct);
-    onAnswer(correct);
-  };
+    onAnswer(correct, question.points, question.correctAnswer, question.explanation);
+  }, [isAnswered, question.correctAnswer, onAnswer]);
 
   // Timer effect
   useEffect(() => {
