@@ -10,7 +10,6 @@ import GameControlModal from '../components/GameControlModal';
 import { questions, events } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
 import { Space } from '../types/game';
-import { soundManager } from '../utils/soundEffects';
 import React from 'react';
 
 // Define player type
@@ -161,10 +160,16 @@ export default function Home() {
     if (index === 0) return { id: 0, type: 'start' };
     if (index === 99) return { id: 99, type: 'finish' };
 
-    // Assign point values between 1 and 5
-    let points = 1; // default points
-    if (index % 15 === 0) points = 5; // Expert questions (every 15th space)
-    else if (index % 7 === 0) points = 3; // Medium questions (every 7th space)
+    // Determine question difficulty based on specified distribution
+    // 50% of questions are 1 point, 30% are 3 points, 20% are 5 points
+    const random = Math.random();
+    let points = 1; // Default (50% chance)
+    
+    if (random > 0.8) {
+      points = 5; // 20% chance for 5 points (hardest)
+    } else if (random > 0.5) {
+      points = 3; // 30% chance for 3 points (medium)
+    }
 
     return {
       id: index,
@@ -187,16 +192,18 @@ export default function Home() {
   };
 
   const handleQuestionAnswer = (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => {
+    // Get the current space the player is on
+    const currentSpace = spaces[currentPlayer.position];
+    const spacePoints = currentSpace.points || 1; // Default to 1 if not defined
+    
     if (isCorrect) {
-      // Ensure points are between 1-5
-      const awardedPoints = Math.min(Math.max(points, 1), 5);
       setCommentary({ 
-        message: `✅ Correct answer! ${currentPlayer.name} earned ${awardedPoints} points!`,
+        message: `✅ Correct answer! ${currentPlayer.name} earned ${spacePoints} points!`,
         type: 'success'
       });
       dispatch({
         type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points: awardedPoints }
+        payload: { playerId: currentPlayer.id, points: spacePoints }
       });
     } else {
       setCommentary({ 

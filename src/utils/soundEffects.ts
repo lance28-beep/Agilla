@@ -5,7 +5,8 @@ export type SoundEffect = 'correct' | 'wrong' | 'move' | 'roll' | 'win';
 export class SoundManager {
   private muted: boolean = false;
 
-  play(soundName: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  play(_soundName: string) {
     // Sound functionality removed
     return;
   }
