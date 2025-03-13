@@ -21,9 +21,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimeWarning, setIsTimeWarning] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
-  const handleAnswer = useCallback((correct: boolean) => {
+  const handleAnswer = useCallback((answer: string) => {
     if (isAnswered) return;
+    const correct = answer === question.correctAnswer;
+    setSelectedAnswer(answer);
     setIsAnswered(true);
     setIsCorrect(correct);
     onAnswer(correct, question.points, question.correctAnswer, question.explanation);
@@ -44,7 +47,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
           setIsTimeWarning(true);
         }
         if (newTime <= 0) {
-          handleAnswer(false);
+          handleAnswer('');
           return 0;
         }
         return newTime;
@@ -53,6 +56,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     return () => clearInterval(timer);
   }, [isOpen, isAnswered, isTimeWarning, handleAnswer]);
+
+  // Reset states when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedAnswer(null);
+      setIsAnswered(false);
+      setIsCorrect(false);
+      setTimeLeft(30);
+      setIsTimeWarning(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -134,7 +148,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => !isAnswered && handleAnswer(option === question.correctAnswer)}
+                onClick={() => !isAnswered && handleAnswer(option)}
                 disabled={isAnswered}
                 className={`
                   group relative p-4 rounded-xl text-left transition-all duration-300 transform
