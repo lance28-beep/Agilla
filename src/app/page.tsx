@@ -480,12 +480,12 @@ export default function Home() {
               Developed by{' '}
               <a
                 href="https://lance28-beep.github.io/portfolio-website"
-                target="_blank"
-                rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
-              >
+          >
                 Lance
-              </a>
+          </a>
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Requested project by: Maam Lyne C. Villegas

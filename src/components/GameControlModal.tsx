@@ -219,16 +219,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
                   <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 blur-xl rounded-full" />
                   {countdown}
                 </motion.div>
-              ) : (
-                <motion.p 
-                  className="text-gray-600 dark:text-gray-400 text-lg"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  Click the dice to roll! 🎲
-                </motion.p>
-              )}
+              ) : null}
             </div>
           )}
           
