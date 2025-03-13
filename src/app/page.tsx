@@ -442,7 +442,6 @@ export default function Home() {
                 isOpen={showQuestionModal}
                 onClose={() => setShowQuestionModal(false)}
                 question={state.currentQuestion}
-                spacePoints={spaces[currentPlayer.position].points || 1}
                 onAnswer={handleQuestionAnswer}
               />
             )}

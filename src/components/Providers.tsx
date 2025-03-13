@@ -1,9 +1,9 @@
 'use client';
 
+import React from 'react';
 import { GameProvider } from '../context/GameContext';
-import { ReactNode } from 'react';
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <GameProvider>
       {children}

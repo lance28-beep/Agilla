@@ -19,9 +19,9 @@ const PlayerSetup: React.FC = () => {
     }
   ]);
 
-  // Handler functions with explicit event parameters
-  const handleAddPlayer = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  // Simple handler functions without event parameters
+  const handleAddPlayer = () => {
+    console.log("Adding player");
     if (players.length < 6) {
       setPlayers([...players, { 
         name: '', 
@@ -34,21 +34,21 @@ const PlayerSetup: React.FC = () => {
     }
   };
 
-  const handleRemovePlayer = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
-    e.preventDefault();
+  const handleRemovePlayer = (index: number) => {
+    console.log("Removing player at index", index);
     if (players.length > 1) {
       setPlayers(players.filter((_, i) => i !== index));
     }
   };
 
   const handleUpdatePlayer = (index: number, field: keyof Omit<Player, 'id'>, value: string) => {
+    console.log("Updating player", index, field, value);
     const newPlayers = [...players];
     newPlayers[index] = { ...newPlayers[index], [field]: value };
     setPlayers(newPlayers);
   };
 
-  const handleStartGame = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  const handleStartGame = () => {
     console.log("Start game clicked");
     
     // Validate player data
@@ -81,7 +81,7 @@ const PlayerSetup: React.FC = () => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="max-w-lg mx-auto p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl transition-all hover:shadow-2xl transform hover:scale-[1.02]">
+    <div className="max-w-lg mx-auto p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl transition-all hover:shadow-2xl transform hover:scale-[1.02]">
       <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800 dark:text-white text-center animate-fadeIn">
         Welcome to AGILA Board Game
       </h2>
@@ -147,7 +147,7 @@ const PlayerSetup: React.FC = () => {
 
             <button
               type="button"
-              onClick={(e) => handleRemovePlayer(e, index)}
+              onClick={() => handleRemovePlayer(index)}
               disabled={players.length === 1}
               className="p-2 text-red-500 hover:bg-red-50 rounded disabled:opacity-50 dark:hover:bg-red-900
                        transition-all transform hover:scale-110 active:scale-95"
@@ -183,7 +183,7 @@ const PlayerSetup: React.FC = () => {
       <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center animate-pulse">
         {players.length < 6 ? `You can add ${6 - players.length} more player(s)` : 'Maximum players reached'}
       </div>
-    </form>
+    </div>
   );
 };
 
