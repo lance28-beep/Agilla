@@ -23,15 +23,16 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimeWarning, setIsTimeWarning] = useState(false);
 
-  const handleAnswer = useCallback((answer: string) => {
+  const handleAnswer = useCallback((correct: boolean) => {
     if (isAnswered) return;
-    
-    const correct = answer === question.correctAnswer;
-    setSelectedAnswer(answer);
     setIsAnswered(true);
     setIsCorrect(correct);
     onAnswer(correct, question.points, question.correctAnswer, question.explanation);
-  }, [isAnswered, question.correctAnswer, onAnswer]);
+    // Close modal after answering
+    setTimeout(() => {
+      onClose();
+    }, 5000);
+  }, [isAnswered, question.correctAnswer, question.points, question.explanation, onAnswer, onClose]);
 
   // Timer effect
   useEffect(() => {
@@ -44,7 +45,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
           setIsTimeWarning(true);
         }
         if (newTime <= 0) {
-          handleAnswer('');
+          handleAnswer(false);
           return 0;
         }
         return newTime;
@@ -134,7 +135,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => !isAnswered && handleAnswer(option)}
+                onClick={() => !isAnswered && handleAnswer(option === question.correctAnswer)}
                 disabled={isAnswered}
                 className={`
                   group relative p-4 rounded-xl text-left transition-all duration-300 transform
