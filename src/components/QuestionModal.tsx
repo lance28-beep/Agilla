@@ -7,56 +7,51 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuestionModalProps {
   isOpen: boolean;
-  onClose: () => void;
   question: Question;
-  onAnswer: (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => void;
+  onAnswer: (isCorrect: boolean) => void;
 }
 
 const QuestionModal: React.FC<QuestionModalProps> = ({
   isOpen,
-  onClose,
   question,
   onAnswer
 }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [hasAnswered, setHasAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30); // 30 seconds countdown
+  const [timeLeft, setTimeLeft] = useState(30);
   const [isTimeWarning, setIsTimeWarning] = useState(false);
 
-  useEffect(() => {
-    if (!hasAnswered && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 10 && !isTimeWarning) {
-            setIsTimeWarning(true);
-            soundManager.play('wrong');
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && !hasAnswered) {
-      handleAnswer(null);
-    }
-  }, [timeLeft, hasAnswered]);
-
-  const handleAnswer = useCallback((option: string | null) => {
-    if (hasAnswered) return;
-
-    const correct = option === question.correctAnswer;
+  const handleAnswer = (answer: string) => {
+    if (isAnswered) return;
+    
+    const correct = answer === question.correctAnswer;
+    setSelectedAnswer(answer);
+    setIsAnswered(true);
     setIsCorrect(correct);
-    setHasAnswered(true);
-    soundManager.play(correct ? 'correct' : 'wrong');
-    onAnswer(correct, question.points, question.correctAnswer, question.explanation);
-  }, [question, onAnswer, hasAnswered]);
+    onAnswer(correct);
+  };
 
+  // Timer effect
   useEffect(() => {
-    if (selectedOption && !hasAnswered) {
-      handleAnswer(selectedOption);
-    }
-  }, [selectedOption, hasAnswered, handleAnswer]);
+    if (!isOpen || isAnswered) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 10 && !isTimeWarning) {
+          setIsTimeWarning(true);
+        }
+        if (newTime <= 0) {
+          handleAnswer('');
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isOpen, isAnswered, isTimeWarning, handleAnswer]);
 
   if (!isOpen) return null;
 
@@ -138,23 +133,23 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 initial={{ x: index % 2 === 0 ? -20 : 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => !hasAnswered && setSelectedOption(option)}
-                disabled={hasAnswered}
+                onClick={() => !isAnswered && handleAnswer(option)}
+                disabled={isAnswered}
                 className={`
                   group relative p-4 rounded-xl text-left transition-all duration-300 transform
-                  ${hasAnswered
+                  ${isAnswered
                     ? option === question.correctAnswer
                       ? 'bg-green-100/80 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300'
-                      : option === selectedOption
+                      : option === selectedAnswer
                       ? 'bg-red-100/80 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-300'
                       : 'bg-gray-100/50 dark:bg-gray-700/30 opacity-50'
                     : 'hover:bg-white/90 dark:hover:bg-gray-700/90 hover:shadow-lg hover:-translate-y-1'
                   }
                   backdrop-blur-sm border-2
-                  ${hasAnswered
+                  ${isAnswered
                     ? option === question.correctAnswer
                       ? 'border-green-500'
-                      : option === selectedOption
+                      : option === selectedAnswer
                       ? 'border-red-500'
                       : 'border-transparent'
                     : 'border-white/20 hover:border-blue-500/50'
@@ -169,7 +164,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 </div>
                 
                 {/* Hover Effect */}
-                {!hasAnswered && (
+                {!isAnswered && (
                   <motion.div
                     className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
                     initial={false}
@@ -181,7 +176,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
           </div>
 
           <AnimatePresence>
-            {hasAnswered && (
+            {isAnswered && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -34,7 +34,6 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
 }) => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showError, setShowError] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -49,7 +48,6 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setShowError(false);
-      setIsExiting(false);
     }
   }, [isOpen]);
 
@@ -57,10 +55,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
 
   const handleClose = () => {
     if (hasRolled) {
-      setIsExiting(true);
-      setTimeout(() => {
-        onClose();
-      }, 500);
+      onClose();
     } else {
       setShowError(true);
       setTimeout(() => setShowError(false), 2000);
@@ -155,7 +150,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
               >
                 {hasRolled ? (
                   <>
-                    <p className="font-medium">⚠️ You've already rolled the dice!</p>
+                    <p className="font-medium">⚠️ You&apos;ve already rolled the dice!</p>
                     <p className="text-sm mt-1">Please answer the question at your current position.</p>
                   </>
                 ) : (

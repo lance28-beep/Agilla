@@ -11,10 +11,8 @@ interface DiceProps {
 const Dice: React.FC<DiceProps> = ({ onRollComplete, disabled = false }) => {
   const [isRolling, setIsRolling] = useState(false);
   const [currentValue, setCurrentValue] = useState(1);
-  const [rollAttempts, setRollAttempts] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [rollPhase, setRollPhase] = useState<'ready' | 'rolling' | 'complete'>('ready');
-  const MAX_ROLLS = 1;
 
   const handleRoll = () => {
     if (isRolling || disabled) {
@@ -27,7 +25,6 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete, disabled = false }) => {
     
     setIsRolling(true);
     setRollPhase('rolling');
-    setRollAttempts(prev => prev + 1);
     
     // Enhanced rolling animation sequence
     let rollCount = 0;
@@ -178,7 +175,7 @@ const Dice: React.FC<DiceProps> = ({ onRollComplete, disabled = false }) => {
             exit="exit"
             className="absolute left-1/2 transform -translate-x-1/2 w-64 p-3 rounded-lg bg-gradient-to-r from-red-500/90 to-pink-500/90 text-white text-sm text-center shadow-lg z-10 backdrop-blur-sm border border-white/20"
           >
-            <p className="font-medium">⚠️ You've already rolled the dice!</p>
+            <p className="font-medium">⚠️ You&apos;ve already rolled the dice!</p>
             <p className="text-xs mt-1 text-white/90">Please answer the question at your current position.</p>
           </motion.div>
         )}
@@ -272,4 +269,4 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleSheet);
 }
 
-export default Dice; 
+export default Dice;
