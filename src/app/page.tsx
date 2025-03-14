@@ -173,11 +173,8 @@ export default function Home() {
   });
 
   const handleRollComplete = (value: number) => {
-    // Reset previous turn states
     setLastRoll(value);
     setHasRolled(true);
-    setCanInteractWithSpace(false); // Reset interaction state first
-    
     setCommentary({ 
       message: `${currentPlayer.name} rolled a ${value}! Moving forward ${value} spaces.`,
       type: 'info'
@@ -195,9 +192,7 @@ export default function Home() {
       setCanInteractWithSpace(false);
     } else {
       // Enable space interaction for all other rolls
-      setTimeout(() => {
-        setCanInteractWithSpace(true);
-      }, 500); // Small delay to ensure smooth transition
+      setCanInteractWithSpace(true);
     }
     setShowGameControlModal(false);
   };
@@ -235,13 +230,11 @@ export default function Home() {
       
       setTimeout(() => {
         setShowQuestionModal(false);
-        // Reset all turn-related states
-        setLastRoll(null);
-        setHasRolled(false);
-        setCanInteractWithSpace(false);
-        
         // If the last roll was 6, allow another roll instead of ending turn
         if (lastRoll === 6) {
+          setHasRolled(false);
+          setLastRoll(null);
+          setCanInteractWithSpace(false); // Ensure space interaction is disabled for new roll
           setShowGameControlModal(true);
         } else {
           handleNextPlayer();
@@ -267,6 +260,7 @@ export default function Home() {
         break;
       case 'reroll':
         message = `${currentPlayer.name} gets to roll again!`;
+        setCanInteractWithSpace(false); // Ensure space interaction is disabled for new roll
         setShowGameControlModal(true);
         break;
     }

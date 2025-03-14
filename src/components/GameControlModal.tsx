@@ -41,15 +41,9 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setShowError(false);
-      setRollCompleted(hasRolled || lastRoll !== null);
+      setRollCompleted(false); // Reset roll state when modal opens
       setIsRolling(false);
-    }
-  }, [isOpen, hasRolled, lastRoll]);
-
-  // Track turn count
-  useEffect(() => {
-    if (!isOpen) {
-      setTurnCount(0);
+      setTurnCount(0); // Reset turn count when modal opens
     }
   }, [isOpen]);
 
