@@ -730,3 +730,30 @@ main {
 .button-hover-effect:hover::after {
   left: 100%;
 }
+
+/* 3D Flip Effect */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Enhance hover effects */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+}
+
+.hover-glow {
+  animation: glow 2s ease-in-out infinite;
+}

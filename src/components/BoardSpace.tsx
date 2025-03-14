@@ -21,6 +21,9 @@ type SpaceStyleProps = {
   isCurrentPosition?: boolean;
 };
 
+// Add random icons array at the top level
+const SPACE_ICONS = ['🎯', '🎲', '💫', '✨', '🌟', '💭', '🎪', '🎨', '🎮', '🎪'];
+
 // Custom hook for space styles
 export const useSpaceStyles = () => {
   const getSpaceColor = ({ type, points = 0, isCurrentPosition = false }: SpaceStyleProps) => {
@@ -107,6 +110,9 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
 }) => {
   const styles = useSpaceStyles();
   
+  // Get a random icon based on space id
+  const randomIcon = SPACE_ICONS[space.id % SPACE_ICONS.length];
+  
   return (
     <motion.div
       whileHover={isInteractive ? { scale: 1.05, zIndex: 10 } : { zIndex: 5 }}
@@ -120,7 +126,7 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
         ${isInteractive 
           ? 'cursor-pointer ring-2 ring-white/50 dark:ring-gray-300/50 shadow-lg' 
           : 'cursor-default shadow-sm'}
-        transition-all duration-200
+        transition-all duration-200 group
       `}
       title={styles.getSpaceTooltip(space.type, space.points)}
     >
@@ -138,24 +144,39 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
         <div className="absolute inset-0 bg-yellow-400/30 dark:bg-yellow-500/30 animate-pulse-slow"></div>
       )}
       
-      {/* Space Number */}
+      {/* Space Number - Small in top left */}
       <div className="absolute top-0.5 left-0.5 text-[8px] xs:text-[10px] sm:text-xs text-white/80 font-medium">
         {space.id + 1}
       </div>
       
-      {/* Space Type Indicator */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs xs:text-sm sm:text-base md:text-lg font-bold text-white drop-shadow-md">
-          {space.type === 'start' ? 'S' : 
-           space.type === 'finish' ? 'F' : 
-           space.points === 5 ? '3' : 
-           space.points === 3 ? '2' : '1'}
-        </span>
+      {/* Space Type Indicator with Flip Effect */}
+      <div className="absolute inset-0 flex items-center justify-center perspective-1000">
+        <div className="relative w-full h-full transform-style-preserve-3d transition-transform duration-500 group-hover:rotate-y-180">
+          {/* Front - Icon */}
+          <div className="absolute inset-0 flex items-center justify-center backface-hidden">
+            <span className="text-base xs:text-lg sm:text-xl md:text-2xl text-white drop-shadow-md transform transition-transform duration-300 group-hover:scale-110">
+              {space.type === 'start' ? '🚀' : 
+               space.type === 'finish' ? '🏁' : 
+               space.type === 'question' ? '❓' : 
+               randomIcon}
+            </span>
+          </div>
+          
+          {/* Back - Number */}
+          <div className="absolute inset-0 flex items-center justify-center backface-hidden rotate-y-180">
+            <span className="text-xs xs:text-sm sm:text-base md:text-lg font-bold text-white drop-shadow-md">
+              {space.type === 'start' ? 'S' : 
+               space.type === 'finish' ? 'F' : 
+               space.points === 5 ? '3' : 
+               space.points === 3 ? '2' : '1'}
+            </span>
+          </div>
+        </div>
       </div>
       
       {/* Player tokens */}
       {playersOnSpace.length > 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className={`
             flex flex-wrap justify-center items-center gap-0.5 
             ${playersOnSpace.length > 1 ? 'scale-75' : ''}
@@ -186,20 +207,22 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: isHovered ? 1 : 0 }}
-          className="absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity"
+          className="absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity z-20"
         >
-          <span className="text-white text-xs sm:text-sm font-medium px-1 py-0.5 rounded bg-black/50">
-            Click
+          <span className="text-white text-xs sm:text-sm font-medium px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm">
+            Click to Play
           </span>
         </motion.div>
       )}
       
-      {/* Hover Glow Effect - Only applies to the hovered card */}
+      {/* Enhanced Hover Glow Effect */}
       {isHovered && !isCurrentPosition && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-white/10 dark:bg-white/5 pointer-events-none"
+          className="absolute inset-0 bg-white/20 dark:bg-white/10 pointer-events-none z-0
+                   shadow-[inset_0_0_20px_rgba(255,255,255,0.5)]
+                   dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.3)]"
         />
       )}
     </motion.div>

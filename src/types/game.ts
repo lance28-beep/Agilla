@@ -28,6 +28,9 @@ export interface Player {
   score: number;
   consecutiveWrongAnswers: number;
   isSkippingTurn: boolean;
+  previousPosition: number;
+  startingPosition: number;
+  moveHistory: number[];
 }
 
 export interface GameState {

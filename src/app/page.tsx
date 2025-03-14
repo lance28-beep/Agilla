@@ -183,6 +183,7 @@ export default function Home() {
     setShowFeedbackDialog(false);
     setTurnAttempt(0);
     setIsReturningToPrevious(false);
+    setShowGameControlModal(false);
   }, [state.currentPlayerIndex]);
 
   const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
@@ -202,6 +203,19 @@ export default function Home() {
   });
 
   const handleRollComplete = (value: number) => {
+    // Validate dice roll value
+    if (typeof value !== 'number' || value < 1 || value > 6) {
+      console.error("Invalid dice roll value:", value);
+      setCommentary({
+        message: "⚠️ Invalid dice roll! Please try again.",
+        type: 'error'
+      });
+      setHasRolled(false);
+      setIsProcessingTurn(false);
+      setShowGameControlModal(true);
+      return;
+    }
+
     if (isProcessingTurn || hasRolled) return;
     
     setIsProcessingTurn(true);
@@ -241,12 +255,26 @@ export default function Home() {
     }, 500);
   };
 
+  // Add effect to handle dice roll state
+  useEffect(() => {
+    if (hasRolled && !lastRoll) {
+      // If hasRolled is true but lastRoll is null, something went wrong
+      setHasRolled(false);
+      setIsProcessingTurn(false);
+      setShowGameControlModal(true);
+      setCommentary({
+        message: "⚠️ Something went wrong with the dice roll. Please try again.",
+        type: 'error'
+      });
+    }
+  }, [hasRolled, lastRoll]);
+
   const handleSpaceClick = (type: string) => {
     // Prevent interaction if turn is being processed
     if (isProcessingTurn) return;
 
-    // Check if dice has been rolled
-    if (!hasRolled) {
+    // Check if dice has been rolled and has a valid value
+    if (!hasRolled || !lastRoll) {
       setShowGameControlModal(true);
       setCommentary({
         message: "Please roll the dice first!",

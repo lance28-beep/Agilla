@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface DiceProps {
@@ -19,17 +19,44 @@ const Dice: React.FC<DiceProps> = ({
   const [currentFace, setCurrentFace] = useState(result || 1);
   const [isRolling, setIsRolling] = useState(false);
   const [rollInterval, setRollInterval] = useState<NodeJS.Timeout | null>(null);
+  const [rollCount, setRollCount] = useState(0);
+  const rollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isRollInProgressRef = useRef(false);
 
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (rollInterval) clearInterval(rollInterval);
-    };
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    console.log('Dice: Cleaning up timers');
+    if (rollInterval) {
+      clearInterval(rollInterval);
+      setRollInterval(null);
+    }
+    if (rollTimeoutRef.current) {
+      clearTimeout(rollTimeoutRef.current);
+      rollTimeoutRef.current = null;
+    }
+    setIsRolling(false);
+    isRollInProgressRef.current = false;
   }, [rollInterval]);
+
+  // Cleanup on unmount or when disabled changes
+  useEffect(() => {
+    if (disabled) {
+      cleanup();
+    }
+    return cleanup;
+  }, [disabled, cleanup]);
 
   // Handle roll animation
   const handleRoll = useCallback(() => {
-    if (disabled || isRolling) return;
+    if (disabled || isRolling || isRollInProgressRef.current) {
+      console.log('Dice: Roll prevented - disabled:', disabled, 'isRolling:', isRolling, 'isRollInProgress:', isRollInProgressRef.current);
+      return;
+    }
+    
+    console.log('Dice: Starting roll #', rollCount + 1);
+    
+    // Clean up any existing timers first
+    cleanup();
     
     // Call onRollStart if provided
     if (onRollStart) {
@@ -37,28 +64,59 @@ const Dice: React.FC<DiceProps> = ({
     }
     
     setIsRolling(true);
+    isRollInProgressRef.current = true;
+    setRollCount(prev => prev + 1);
     
-    // Generate random values during animation
+    // Generate random values during animation with validation
     const interval = setInterval(() => {
-      setCurrentFace(Math.floor(Math.random() * 6) + 1);
+      const randomValue = Math.floor(Math.random() * 6) + 1;
+      if (randomValue >= 1 && randomValue <= 6) {
+        setCurrentFace(randomValue);
+      }
     }, 100);
     
     setRollInterval(interval);
     
     // Stop rolling after 1 second and get final value
-    setTimeout(() => {
-      clearInterval(interval);
-      setRollInterval(null);
+    rollTimeoutRef.current = setTimeout(() => {
+      if (!isRollInProgressRef.current) {
+        console.log('Dice: Roll already completed, skipping final value');
+        return;
+      }
+
+      cleanup();
       
-      // Generate final result (1-6)
-      const finalValue = result !== null ? result : Math.floor(Math.random() * 6) + 1;
+      // Generate and validate final result
+      let finalValue = result !== null ? result : Math.floor(Math.random() * 6) + 1;
+      
+      // Ensure final value is valid, retry if not
+      let attempts = 0;
+      while ((finalValue < 1 || finalValue > 6) && attempts < 3) {
+        finalValue = Math.floor(Math.random() * 6) + 1;
+        attempts++;
+      }
+      
+      // If still invalid after retries, use a safe default
+      if (finalValue < 1 || finalValue > 6) {
+        console.error("Dice: Failed to generate valid dice roll after retries");
+        finalValue = 1; // Safe default
+      }
+      
+      console.log('Dice: Roll complete - value:', finalValue, 'attempts:', attempts);
       setCurrentFace(finalValue);
-      setIsRolling(false);
       
-      // Notify parent component
+      // Notify parent component with validated result
       onRollComplete(finalValue);
     }, 1000);
-  }, [disabled, isRolling, onRollComplete, onRollStart, result]);
+  }, [disabled, isRolling, onRollComplete, onRollStart, result, rollCount, cleanup]);
+
+  // Add effect to handle result changes
+  useEffect(() => {
+    if (result !== null) {
+      console.log('Dice: Result prop changed - value:', result);
+      setCurrentFace(result);
+    }
+  }, [result]);
 
   const getDiceFace = (value: number) => {
     switch (value) {
