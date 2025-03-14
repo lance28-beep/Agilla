@@ -11,6 +11,8 @@ import { questions, events } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
 import { Space } from '../types/game';
 import React from 'react';
+import { motion } from 'framer-motion';
+import CelebrationModal from '../components/CelebrationModal';
 
 // Define player type
 interface Player {
@@ -20,6 +22,9 @@ interface Player {
   position: number;
   score: number;
   isSkippingTurn: boolean;
+  previousPosition: number;
+  startingPosition: number;
+  moveHistory: number[];
 }
 
 // Extracted PlayerStats component
@@ -149,12 +154,36 @@ export default function Home() {
   const [lastRoll, setLastRoll] = useState<number | null>(null);
   const [hasRolled, setHasRolled] = useState(false);
   const [canInteractWithSpace, setCanInteractWithSpace] = useState(false);
+  const [isProcessingTurn, setIsProcessingTurn] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [turnAttempt, setTurnAttempt] = useState(0);
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+    details?: string;
+  }>({
+    message: '',
+    type: 'info'
+  });
   const [commentary, setCommentary] = useState<{ message: string; type: 'success' | 'error' | 'info' }>({
     message: '',
     type: 'info'
   });
+  const [isReturningToPrevious, setIsReturningToPrevious] = useState(false);
+  const [showCelebrationModal, setShowCelebrationModal] = useState(false);
 
   const currentPlayer = state.players[state.currentPlayerIndex];
+
+  // Reset game states when player changes
+  useEffect(() => {
+    setLastRoll(null);
+    setHasRolled(false);
+    setCanInteractWithSpace(false);
+    setIsProcessingTurn(false);
+    setShowFeedbackDialog(false);
+    setTurnAttempt(0);
+    setIsReturningToPrevious(false);
+  }, [state.currentPlayerIndex]);
 
   const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
     if (index === 0) return { id: 0, type: 'start' };
@@ -173,13 +202,23 @@ export default function Home() {
   });
 
   const handleRollComplete = (value: number) => {
+    if (isProcessingTurn || hasRolled) return;
+    
+    setIsProcessingTurn(true);
     setLastRoll(value);
     setHasRolled(true);
+    setTurnAttempt(prev => prev + 1);
+    
+    // Store current position before moving
+    const currentPosition = currentPlayer.position;
+    const newPosition = Math.min(currentPosition + value, 99);
+    
     setCommentary({ 
-      message: `${currentPlayer.name} rolled a ${value}! Moving forward ${value} spaces.`,
+      message: `${currentPlayer.name} rolled a ${value}! Moving to Card ${newPosition + 1}.`,
       type: 'info'
     });
     
+    // Use a single dispatch for player movement
     dispatch({ type: 'MOVE_PLAYER', payload: value });
     
     // Enable space interaction after roll, unless it's a 6
@@ -188,59 +227,154 @@ export default function Home() {
         message: `${currentPlayer.name} rolled a 6! They get another turn!`,
         type: 'success'
       });
-      // Don't enable space interaction yet for a 6
       setCanInteractWithSpace(false);
+      setShowGameControlModal(true);
     } else {
-      // Enable space interaction for all other rolls
+      // Ensure space interaction is enabled for all valid rolls
       setCanInteractWithSpace(true);
+      setShowGameControlModal(false);
     }
-    setShowGameControlModal(false);
+    
+    // Reset processing state after a short delay
+    setTimeout(() => {
+      setIsProcessingTurn(false);
+    }, 500);
+  };
+
+  const handleSpaceClick = (type: string) => {
+    // Prevent interaction if turn is being processed
+    if (isProcessingTurn) return;
+
+    // Check if dice has been rolled
+    if (!hasRolled) {
+      setShowGameControlModal(true);
+      setCommentary({
+        message: "Please roll the dice first!",
+        type: 'error'
+      });
+      return;
+    }
+
+    // Only allow interaction with current position
+    const currentSpace = spaces[currentPlayer.position];
+    if (!currentSpace || currentSpace.type !== 'question') return;
+
+    setIsProcessingTurn(true);
+    const unusedQuestions = questions.filter(q => !state.usedQuestionIds.has(q.id));
+    if (unusedQuestions.length === 0) {
+      dispatch({ type: 'RESET_USED_QUESTIONS' });
+    }
+    const question = unusedQuestions[Math.floor(Math.random() * unusedQuestions.length)];
+    if (question) {
+      dispatch({ type: 'SET_CURRENT_QUESTION', payload: question });
+      setShowQuestionModal(true);
+    }
+    
+    // Reset processing state after a short delay
+    setTimeout(() => {
+      setIsProcessingTurn(false);
+    }, 500);
+  };
+
+  const handleNextPlayer = () => {
+    if (isProcessingTurn) return;
+    
+    setIsProcessingTurn(true);
+    // Reset all turn-related states
+    setLastRoll(null);
+    setHasRolled(false);
+    setCanInteractWithSpace(false);
+    setTurnAttempt(0);
+    dispatch({ type: 'NEXT_PLAYER' });
+    setCommentary({
+      message: `Next player's turn!`,
+      type: 'info'
+    });
+    
+    // Reset processing state after a short delay
+    setTimeout(() => {
+      setIsProcessingTurn(false);
+    }, 500);
   };
 
   const handleQuestionAnswer = (isCorrect: boolean, points: number, correctAnswer?: string, explanation?: string) => {
-    if (isCorrect) {
-      // Ensure points are between 1-5
-      const awardedPoints = Math.min(Math.max(points, 1), 5);
-      setCommentary({ 
-        message: `✅ Correct answer! ${currentPlayer.name} earned ${awardedPoints} points!`,
-        type: 'success'
-      });
-      dispatch({
-        type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points: awardedPoints }
-      });
-    } else {
-      setCommentary({ 
-        message: `❌ Incorrect. You lost 1 point. The correct answer is: ${correctAnswer}`,
-        type: 'error'
-      });
-      dispatch({
-        type: 'UPDATE_SCORE',
-        payload: { playerId: currentPlayer.id, points: -1 }
-      });
-    }
+    if (isProcessingTurn) return;
     
+    setIsProcessingTurn(true);
+    setShowQuestionModal(false);
+    setCanInteractWithSpace(false);
+
+    // Add a small delay before showing feedback
     setTimeout(() => {
-      if (explanation) {
-        setCommentary({
-          message: `💡 ${explanation}`,
-          type: 'info'
+      if (isCorrect) {
+        // Award points equal to the dice roll
+        const awardedPoints = lastRoll || 0;
+        setFeedbackMessage({
+          message: "✅ Correct Answer!",
+          type: "success",
+          details: `You earned ${awardedPoints} points and stay in your current position.`
         });
+        dispatch({
+          type: 'UPDATE_SCORE',
+          payload: { playerId: currentPlayer.id, points: awardedPoints }
+        });
+      } else {
+        // Check if this is the first mistake (no previous valid position)
+        const isFirstMistake = currentPlayer.moveHistory.length <= 1;
+        
+        if (isFirstMistake) {
+          setFeedbackMessage({
+            message: "❌ Incorrect Answer",
+            type: "error",
+            details: "Returning to the starting position."
+          });
+          // Return to starting position
+          dispatch({ 
+            type: 'MOVE_PLAYER', 
+            payload: currentPlayer.startingPosition - currentPlayer.position 
+          });
+        } else {
+          setFeedbackMessage({
+            message: "❌ Incorrect Answer",
+            type: "error",
+            details: `Returning to your previous position (${currentPlayer.previousPosition + 1}). The correct answer is: ${correctAnswer}`
+          });
+          // Return to previous position
+          dispatch({ 
+            type: 'MOVE_PLAYER', 
+            payload: currentPlayer.previousPosition - currentPlayer.position 
+          });
+        }
       }
       
+      setShowFeedbackDialog(true);
+
+      // Show explanation after a delay
+      if (explanation) {
+        setTimeout(() => {
+          setFeedbackMessage({
+            message: "💡 Explanation",
+            type: "info",
+            details: explanation
+          });
+        }, 3000);
+      }
+
+      // Handle turn completion after feedback
       setTimeout(() => {
-        setShowQuestionModal(false);
-        // If the last roll was 6, allow another roll instead of ending turn
+        setShowFeedbackDialog(false);
+        setIsReturningToPrevious(false);
         if (lastRoll === 6) {
           setHasRolled(false);
           setLastRoll(null);
-          setCanInteractWithSpace(false); // Ensure space interaction is disabled for new roll
+          setCanInteractWithSpace(false);
           setShowGameControlModal(true);
         } else {
           handleNextPlayer();
         }
-      }, 3000);
-    }, 2000);
+        setIsProcessingTurn(false);
+      }, 5000);
+    }, 500);
   };
 
   const handleEventEffect = () => {
@@ -273,50 +407,10 @@ export default function Home() {
     }
   };
 
-  const handleNextPlayer = () => {
-    // Reset all turn-related states
-    setLastRoll(null);
-    setHasRolled(false);
-    setCanInteractWithSpace(false);
-    dispatch({ type: 'NEXT_PLAYER' });
-    setCommentary({
-      message: `Next player's turn!`,
-      type: 'info'
-    });
-  };
-
-  const handleSpaceClick = (spaceType: string) => {
-    if (!canInteractWithSpace) return;
-    
-    // Disable space interaction immediately to prevent multiple clicks
-    setCanInteractWithSpace(false);
-    
-    switch (spaceType) {
-      case 'question':
-        const unusedQuestions = questions.filter(q => !state.usedQuestionIds.has(q.id));
-        if (unusedQuestions.length === 0) {
-          dispatch({ type: 'RESET_USED_QUESTIONS' });
-        }
-        const question = unusedQuestions[Math.floor(Math.random() * unusedQuestions.length)];
-        // Get the current space's points
-        const currentSpace = spaces.find(s => s.id === currentPlayer.position);
-        const spacePoints = currentSpace?.points || 1;
-        dispatch({ type: 'SET_CURRENT_QUESTION', payload: question });
-        setShowQuestionModal(true);
-        break;
-      case 'event':
-        const event = events[Math.floor(Math.random() * events.length)];
-        dispatch({ type: 'SET_CURRENT_EVENT', payload: event });
-        setShowEventModal(true);
-        break;
-      default:
-        handleNextPlayer();
-    }
-  };
-
   // Check for winner
   useEffect(() => {
     if (state.winner) {
+      setShowCelebrationModal(true);
       setCommentary({
         message: `🎉 Congratulations ${state.winner.name}! You've won the game with ${state.winner.score} points! 🎉`,
         type: 'success'
@@ -340,47 +434,10 @@ export default function Home() {
       <div className="flex-1 flex flex-col relative z-10">
         {/* Game Header */}
         <header className="w-full max-w-7xl mx-auto px-4 py-6">
-          <div className="text-center space-y-4">
+          <div className="text-center">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm animate-gradient">
               AP GILA EKO9 Board Game
             </h1>
-            
-            {/* Enhanced AGILA Header */}
-            <div className="bg-white/90 dark:bg-gray-800/90 rounded-xl shadow-xl backdrop-blur-sm border border-white/20 dark:border-gray-700/20 overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
-                {[
-                  { letter: 'AP', word: 'Araling Panlipunan', icon: '📚', color: 'from-blue-500 to-indigo-600', bgHover: 'from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20' },
-                  { letter: 'GILA', word: 'Game-based Interactive Learning Activities', icon: '🎮', color: 'from-purple-500 to-pink-600', bgHover: 'from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20' },
-                  { letter: 'EKO9', word: 'Ekonomiks Grade 9', icon: '✨', color: 'from-amber-500 to-yellow-600', bgHover: 'from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/20' },
-                ].map(({ letter, word, icon, color, bgHover }, index) => (
-                  <div 
-                    key={index}
-                    className={`flex flex-col items-center justify-center p-4 group hover:bg-gradient-to-r ${bgHover} transition-all duration-300 relative overflow-hidden`}
-                  >
-                    <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${color} opacity-70 transition-all duration-300 group-hover:h-1.5`}></div>
-                    
-                    <div className={`w-12 h-12 md:w-14 md:h-14 mb-2 flex items-center justify-center text-xl md:text-2xl font-bold bg-gradient-to-r ${color} text-white rounded-xl shadow-md group-hover:scale-110 transition-all duration-300`}>
-                      {letter}
-                    </div>
-                    
-                    <div className="flex items-center gap-2 justify-center">
-                      <span className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 text-center line-clamp-1">
-                        {word}
-                      </span>
-                      <span className="text-xl md:text-2xl animate-float">
-                        {icon}
-                      </span>
-                    </div>
-                    
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center max-w-[200px] opacity-80 group-hover:opacity-100 transition-opacity line-clamp-1">
-                      {index === 0 && "Philippine Social Studies"}
-                      {index === 1 && "Interactive Educational Gaming"}
-                      {index === 2 && "Economics for Freshmen"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </header>
 
@@ -409,7 +466,16 @@ export default function Home() {
                   currentPlayer={currentPlayer}
                   lastRoll={lastRoll}
                   canInteractWithSpace={canInteractWithSpace}
-                  onRollClick={() => setShowGameControlModal(true)}
+                  onRollClick={() => {
+                    if (!hasRolled) {
+                      setShowGameControlModal(true);
+                    } else {
+                      setCommentary({
+                        message: "You've already rolled! Please interact with your current position.",
+                        type: 'error'
+                      });
+                    }
+                  }}
                   onEndTurnClick={handleNextPlayer}
                 />
               </div>
@@ -432,6 +498,8 @@ export default function Home() {
                   onSpaceClick={handleSpaceClick}
                   currentPlayerPosition={currentPlayer?.position || 0}
                   canInteractWithSpace={canInteractWithSpace}
+                  isReturningToPrevious={isReturningToPrevious}
+                  previousPosition={currentPlayer?.previousPosition || 0}
                 />
               </div>
 
@@ -467,34 +535,50 @@ export default function Home() {
                 />
               )}
 
-              {/* Game Over Modal */}
-              {state.gameEnded && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-                  <div className="bg-white/90 dark:bg-gray-800/90 p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-scaleUp backdrop-blur-lg border border-white/20">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                      Game Over!
-                    </h2>
-                    <p className="text-center mb-6 text-gray-600 dark:text-gray-300">
-                      {state.winner ? (
-                        <>
-                          <span className="text-2xl md:text-3xl text-yellow-500">🏆</span>
-                          <br />
-                          <span className="font-semibold text-lg md:text-xl">{state.winner.name}</span> wins with{' '}
-                          <span className="font-bold text-yellow-600 dark:text-yellow-400 text-lg md:text-xl">{state.winner.score}</span> points!
-                        </>
-                      ) : "It's a tie!"}
-                    </p>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 
-                               text-white rounded-xl font-semibold text-base tracking-wide
-                               hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 
-                               transform hover:scale-105 transition-all duration-300
-                               shadow-lg hover:shadow-xl active:scale-95"
-                    >
-                      Play Again 🎮
-                    </button>
-                  </div>
+              {/* Celebration Modal */}
+              {showCelebrationModal && state.winner && (
+                <CelebrationModal
+                  isOpen={showCelebrationModal}
+                  onClose={() => {
+                    setShowCelebrationModal(false);
+                    window.location.reload();
+                  }}
+                  winnerName={state.winner.name}
+                  score={state.winner.score}
+                />
+              )}
+
+              {/* Feedback Dialog */}
+              {showFeedbackDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className={`bg-white/90 dark:bg-gray-800/90 p-6 rounded-xl shadow-xl max-w-md w-full mx-4 
+                              backdrop-blur-sm border ${
+                                feedbackMessage.type === 'success' 
+                                  ? 'border-green-500/30' 
+                                  : feedbackMessage.type === 'error'
+                                  ? 'border-red-500/30'
+                                  : 'border-blue-500/30'
+                              }`}
+                  >
+                    <div className="text-center space-y-4">
+                      <div className={`text-4xl mb-2 ${
+                        feedbackMessage.type === 'success' 
+                          ? 'text-green-500' 
+                          : feedbackMessage.type === 'error'
+                          ? 'text-red-500'
+                          : 'text-blue-500'
+                      }`}>
+                        {feedbackMessage.message}
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300">
+                        {feedbackMessage.details}
+                      </p>
+                    </div>
+                  </motion.div>
                 </div>
               )}
             </div>
@@ -505,22 +589,60 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white/90 dark:bg-gray-800/90 shadow-lg backdrop-blur-sm border-t border-white/20 dark:border-gray-700/20 py-4">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Developed by{' '}
-              <a
-                href="https://lance28-beep.github.io/portfolio-website"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
-              >
-                Lance
-              </a>
-              {' '} | {' '}
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Requested by: Maam Lyne C. Villegas
-              </span>
-            </p>
+          <div className="flex flex-col items-center justify-center text-center space-y-4">
+            {/* Game Information */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+              {[
+                { letter: 'AP', word: 'Araling Panlipunan', icon: '📚', color: 'from-blue-500 to-indigo-600', bgHover: 'from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20' },
+                { letter: 'GILA', word: 'Game-based Interactive Learning Activities', icon: '🎮', color: 'from-purple-500 to-pink-600', bgHover: 'from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20' },
+                { letter: 'EKO9', word: 'Ekonomiks Grade 9', icon: '✨', color: 'from-amber-500 to-yellow-600', bgHover: 'from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/20' },
+              ].map(({ letter, word, icon, color, bgHover }, index) => (
+                <div 
+                  key={index}
+                  className={`flex flex-col items-center justify-center p-3 group hover:bg-gradient-to-r ${bgHover} transition-all duration-300 relative overflow-hidden rounded-lg`}
+                >
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${color} opacity-70 transition-all duration-300 group-hover:h-1.5`}></div>
+                  
+                  <div className={`w-10 h-10 md:w-12 md:h-12 mb-2 flex items-center justify-center text-lg md:text-xl font-bold bg-gradient-to-r ${color} text-white rounded-xl shadow-md group-hover:scale-110 transition-all duration-300`}>
+                    {letter}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className="text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 text-center line-clamp-1">
+                      {word}
+                    </span>
+                    <span className="text-lg md:text-xl animate-float">
+                      {icon}
+                    </span>
+                  </div>
+                  
+                  <div className="mt-1 text-[10px] text-gray-500 dark:text-gray-400 text-center max-w-[200px] opacity-80 group-hover:opacity-100 transition-opacity line-clamp-1">
+                    {index === 0 && "Philippine Social Studies"}
+                    {index === 1 && "Interactive Educational Gaming"}
+                    {index === 2 && "Economics for Freshmen"}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Developer Information */}
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Developed by{' '}
+                <a
+                  href="https://lance28-beep.github.io/portfolio-website"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
+                >
+                  Lance
+                </a>
+                {' '} | {' '}
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Requested by: Maam Lyne C. Villegas
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </footer>

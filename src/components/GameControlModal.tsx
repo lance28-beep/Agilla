@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Dice from './Dice';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,40 +36,96 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
   const [rollCompleted, setRollCompleted] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
   const [isRolling, setIsRolling] = useState(false);
+  const [rollValue, setRollValue] = useState<number | null>(null);
+  const [turnInProgress, setTurnInProgress] = useState(false);
+  const [rollingNumbers, setRollingNumbers] = useState<number[]>([]);
+  const rollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const rollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup function to clear all timeouts and intervals
+  const cleanupRollTimers = useCallback(() => {
+    if (rollIntervalRef.current) {
+      clearInterval(rollIntervalRef.current);
+      rollIntervalRef.current = null;
+    }
+    if (rollTimeoutRef.current) {
+      clearTimeout(rollTimeoutRef.current);
+      rollTimeoutRef.current = null;
+    }
+  }, []);
 
   // Reset states when modal opens or player changes
   useEffect(() => {
     if (isOpen) {
       setShowError(false);
-      setRollCompleted(false); // Reset roll state when modal opens
+      setRollCompleted(false);
       setIsRolling(false);
-      setTurnCount(0); // Reset turn count when modal opens
+      setRollValue(null);
+      setTurnInProgress(false);
+      setRollingNumbers([]);
+      cleanupRollTimers();
+      // Only reset turn count if this is a new player's turn
+      if (!hasRolled) {
+        setTurnCount(0);
+      }
     }
-  }, [isOpen]);
+
+    // Cleanup on unmount
+    return cleanupRollTimers;
+  }, [isOpen, hasRolled, cleanupRollTimers]);
 
   // Handle roll completion
   const handleRollComplete = useCallback((value: number) => {
+    if (rollCompleted) return; // Prevent double execution
+    
+    cleanupRollTimers();
     setRollCompleted(true);
     setIsRolling(false);
+    setTurnInProgress(true);
     setTurnCount(prev => prev + 1);
-    onRollAttempt();
+    onRollAttempt(); // Set hasRolled flag in parent
     onRollComplete(value);
-  }, [onRollAttempt, onRollComplete]);
+  }, [onRollAttempt, onRollComplete, cleanupRollTimers, rollCompleted]);
+
+  const handleRoll = () => {
+    if (isRolling || hasRolled || turnInProgress || rollCompleted) return;
+    
+    setIsRolling(true);
+    setTurnInProgress(true);
+
+    // Generate random numbers for rolling effect
+    const numbers = Array.from({ length: 10 }, () => Math.floor(Math.random() * 6) + 1);
+    setRollingNumbers(numbers);
+
+    // Final roll value
+    const finalRoll = Math.floor(Math.random() * 6) + 1;
+
+    // Clear any existing timers
+    cleanupRollTimers();
+
+    // Simulate rolling animation for 3 seconds
+    let currentIndex = 0;
+    rollIntervalRef.current = setInterval(() => {
+      if (currentIndex < numbers.length) {
+        setRollValue(numbers[currentIndex]);
+        currentIndex++;
+      } else {
+        cleanupRollTimers();
+        setRollValue(finalRoll);
+        rollTimeoutRef.current = setTimeout(() => {
+          handleRollComplete(finalRoll);
+        }, 500);
+      }
+    }, 300);
+  };
 
   if (!isOpen) return null;
 
   const handleClose = () => {
-    if (rollCompleted) {
-      setRollCompleted(false); // Reset roll state when closing
-      onClose();
-    } else {
-      setShowError(true);
-      setTimeout(() => setShowError(false), 2000);
-    }
-  };
-
-  const handleRollStart = () => {
-    setIsRolling(true);
+    if (isRolling) return;
+    cleanupRollTimers();
+    setTurnInProgress(false);
+    onClose();
   };
 
   return (
@@ -143,15 +199,20 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
                          text-blue-700 dark:text-blue-300 text-sm"
               >
                 <p>Current Position: <span className="font-bold">{currentPlayer.position + 1}</span></p>
+                {rollValue && (
+                  <p className="mt-1 text-yellow-600 dark:text-yellow-400 font-semibold">
+                    🎲 Dice Roll Result: {rollValue}
+                  </p>
+                )}
               </motion.div>
 
               <div className="flex flex-col items-center justify-center gap-4 md:gap-6">
                 <div className="relative">
                   <Dice
                     onRollComplete={handleRollComplete}
-                    onRollStart={handleRollStart}
-                    disabled={rollCompleted || isRolling}
-                    result={lastRoll}
+                    onRollStart={handleRoll}
+                    disabled={rollCompleted || isRolling || turnInProgress}
+                    result={rollValue}
                   />
                   
                   <motion.div
@@ -160,7 +221,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
                     className="mt-3 text-xs md:text-sm text-gray-600 dark:text-gray-400"
                   >
                     {isRolling ? "Rolling..." : 
-                     rollCompleted ? `You rolled a ${lastRoll}!` : 
+                     rollCompleted ? `You rolled a ${rollValue}!` : 
                      "Click the dice to roll"}
                   </motion.div>
                 </div>

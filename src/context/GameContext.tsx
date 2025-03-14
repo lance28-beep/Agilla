@@ -3,6 +3,29 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { GameState, Player, Question, EventCard } from '../types/game';
 
+interface Player {
+  id: number;
+  name: string;
+  token: string;
+  position: number;
+  previousPosition: number;
+  startingPosition: number;
+  score: number;
+  isSkippingTurn: boolean;
+  moveHistory: number[]; // Track all positions visited
+}
+
+interface GameState {
+  players: Player[];
+  currentPlayerIndex: number;
+  currentQuestion: Question | null;
+  currentEvent: EventCard | null;
+  usedQuestionIds: Set<number>;
+  gameStarted: boolean;
+  gameEnded: boolean;
+  winner: Player | null;
+}
+
 type GameAction =
   | { type: 'START_GAME'; payload: Player[] }
   | { type: 'NEXT_PLAYER' }
@@ -13,7 +36,8 @@ type GameAction =
   | { type: 'MARK_QUESTION_USED'; payload: number }
   | { type: 'SKIP_TURN'; payload: number }
   | { type: 'RESET_USED_QUESTIONS' }
-  | { type: 'CHECK_WIN_CONDITION' };
+  | { type: 'CHECK_WIN_CONDITION' }
+  | { type: 'END_GAME' };
 
 const initialState: GameState = {
   players: [],
@@ -36,8 +60,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       console.log("Starting game with players:", action.payload);
       return {
         ...state,
-        players: action.payload,
+        players: action.payload.map(player => ({
+          ...player,
+          previousPosition: 0,
+          startingPosition: 0,
+          moveHistory: [0]
+        })),
         gameStarted: true,
+        currentPlayerIndex: 0,
+        currentQuestion: null,
+        currentEvent: null,
+        usedQuestionIds: new Set(),
         gameEnded: false,
         winner: null
       };
@@ -50,18 +83,21 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
 
     case 'MOVE_PLAYER':
-      const updatedPlayers = state.players.map((player, index) => {
-        if (index === state.currentPlayerIndex) {
-          const newPosition = Math.min(player.position + action.payload, 99);
-          return { 
-            ...player, 
-            position: newPosition,
-            isSkippingTurn: false
-          };
-        }
-        return player;
-      });
-      return { ...state, players: updatedPlayers };
+      return {
+        ...state,
+        players: state.players.map(player => {
+          if (player.id === state.players[state.currentPlayerIndex].id) {
+            const newPosition = Math.min(99, Math.max(0, player.position + action.payload));
+            return {
+              ...player,
+              previousPosition: player.position,
+              position: newPosition,
+              moveHistory: [...player.moveHistory, newPosition]
+            };
+          }
+          return player;
+        })
+      };
 
     case 'UPDATE_SCORE':
       const playersWithUpdatedScore = state.players.map(player => {
@@ -70,8 +106,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const points = typeof action.payload.points === 'number' ? action.payload.points : 0;
           return { 
             ...player, 
-            score: currentScore + points,
-            consecutiveWrongAnswers: 0
+            score: Math.max(0, currentScore + points)
           };
         }
         return player;
@@ -106,15 +141,22 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, usedQuestionIds: new Set() };
 
     case 'CHECK_WIN_CONDITION':
-      const playerWith100Points = state.players.find(player => player.score >= 100);
-      if (playerWith100Points) {
+      const playerAtFinish = state.players.find(player => player.position >= 99);
+      if (playerAtFinish) {
         return {
           ...state,
           gameEnded: true,
-          winner: playerWith100Points
+          winner: playerAtFinish
         };
       }
       return state;
+
+    case 'END_GAME':
+      return {
+        ...state,
+        gameEnded: true,
+        winner: null
+      };
 
     default:
       return state;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { Space } from '../types/game';
 import { motion } from 'framer-motion';
@@ -18,9 +18,11 @@ interface Player {
 
 interface GameBoardProps {
   spaces: Space[];
-  onSpaceClick: (spaceType: string) => void;
+  onSpaceClick: (type: string) => void;
   currentPlayerPosition: number;
   canInteractWithSpace: boolean;
+  isReturningToPrevious: boolean;
+  previousPosition: number;
 }
 
 // Memoized LegendItem component
@@ -37,7 +39,24 @@ const LegendItem = React.memo(({ type, points, label }: { type: string; points: 
           group-hover:scale-105
         `}
       >
-        {styles.getSpaceIcon(type)}
+        {type === 'question' ? (
+          <motion.span
+            animate={{
+              rotate: [0, 10, -10, 0],
+            }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }}
+            className="text-lg md:text-xl"
+          >
+            ❓
+          </motion.span>
+        ) : (
+          styles.getSpaceIcon(type)
+        )}
       </div>
       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
         {label}
@@ -87,15 +106,19 @@ const RollPromptDialog = React.memo(({ isOpen, onClose }: { isOpen: boolean; onC
 RollPromptDialog.displayName = 'RollPromptDialog';
 
 // Main GameBoard component
-const GameBoard: React.FC<GameBoardProps> = ({ 
-  spaces, 
-  onSpaceClick, 
-  currentPlayerPosition, 
-  canInteractWithSpace 
+const GameBoard: React.FC<GameBoardProps> = ({
+  spaces,
+  onSpaceClick,
+  currentPlayerPosition,
+  canInteractWithSpace,
+  isReturningToPrevious,
+  previousPosition
 }) => {
   const { state } = useGame();
   const [showRollPrompt, setShowRollPrompt] = useState(false);
   const [hoveredSpace, setHoveredSpace] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [displayPosition, setDisplayPosition] = useState(currentPlayerPosition);
 
   const getPlayerTokens = (spaceId: number) => {
     return state.players.filter(player => player.position === spaceId);
@@ -103,13 +126,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   const handleSpaceClick = (space: Space) => {
     // Only show roll prompt if trying to interact without rolling
-    if (space.id === currentPlayerPosition && !canInteractWithSpace) {
+    if (!canInteractWithSpace) {
       setShowRollPrompt(true);
       return;
     }
 
     // Allow interaction only with current position and when canInteractWithSpace is true
-    if (!canInteractWithSpace || space.id !== currentPlayerPosition) {
+    if (space.id !== currentPlayerPosition) {
       return;
     }
 
@@ -118,16 +141,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
       return;
     }
 
-    onSpaceClick(space.type);
+    // Only allow interaction with question spaces
+    if (space.type === 'question') {
+      onSpaceClick(space.type);
+    }
   };
 
   // Memoize legend items for better performance
   const legendItems = useMemo(() => [
     { type: 'start', points: 0, label: 'Start' },
     { type: 'finish', points: 0, label: 'Finish' },
-    { type: 'question', points: 1, label: 'Basic (1pt)' },
-    { type: 'question', points: 3, label: 'Medium (3pts)' },
-    { type: 'question', points: 5, label: 'Expert (5pts)' },
+    { type: 'question', points: 1, label: 'Question Space' },
   ], []);
 
   // Memoize the board spaces to prevent unnecessary re-renders
@@ -154,6 +178,37 @@ const GameBoard: React.FC<GameBoardProps> = ({
       };
     });
   }, [spaces]);
+
+  // Handle position animation
+  useEffect(() => {
+    if (isReturningToPrevious) {
+      setIsAnimating(true);
+      const startTime = Date.now();
+      const duration = 1000; // 1 second animation
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        
+        setDisplayPosition(
+          previousPosition + (currentPlayerPosition - previousPosition) * easeProgress
+        );
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          setIsAnimating(false);
+        }
+      };
+      
+      animate();
+    } else {
+      setDisplayPosition(currentPlayerPosition);
+    }
+  }, [currentPlayerPosition, previousPosition, isReturningToPrevious]);
 
   return (
     <div className="w-full h-full overflow-auto p-1 sm:p-2 md:p-4 game-board-container">
@@ -221,8 +276,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
               <li>Roll the dice by clicking the "Roll" button</li>
               <li>Your token will move automatically to the new position</li>
               <li>Click on your current position to interact with the space</li>
-              <li>Answer questions correctly to earn points</li>
-              <li>The first player to reach 100 points wins!</li>
+              <li>Answer correctly to earn points equal to your dice roll</li>
+              <li>Answer incorrectly to return to your previous position</li>
+              <li>The first player to reach position 100 wins!</li>
             </ol>
           </div>
         </div>
