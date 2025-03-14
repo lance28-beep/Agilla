@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { Player } from '../types/game';
 
-const TOKENS = ['🔵', '🔴', '🟡', '🟢', '🟣', '🟤'];
-
 const PlayerSetup: React.FC = () => {
   const { dispatch } = useGame();
   const [players, setPlayers] = useState<Omit<Player, 'id'>[]>([
@@ -15,7 +13,10 @@ const PlayerSetup: React.FC = () => {
       position: 0, 
       score: 0, 
       consecutiveWrongAnswers: 0, 
-      isSkippingTurn: false 
+      isSkippingTurn: false,
+      previousPosition: 0,
+      startingPosition: 0,
+      moveHistory: []
     }
   ]);
 
@@ -30,7 +31,10 @@ const PlayerSetup: React.FC = () => {
         position: 0, 
         score: 0,
         consecutiveWrongAnswers: 0,
-        isSkippingTurn: false
+        isSkippingTurn: false,
+        previousPosition: 0,
+        startingPosition: 0,
+        moveHistory: []
       }]);
     }
   }
