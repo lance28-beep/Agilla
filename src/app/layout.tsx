@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Providers } from '../components/Providers';
 import localFont from 'next/font/local';
+import { Inter } from 'next/font/google'
 
 // Load Geist font locally
 const geistSans = localFont({
@@ -48,9 +49,13 @@ const geistMono = localFont({
   display: 'swap',
 });
 
+const inter = Inter({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: 'AGILA Board Game',
-  description: 'An interactive educational board game for learning economic concepts',
+  title: 'AP GILA EKO9 Board Game',
+  description: 'An educational journey through interactive gameplay - Araling Panlipunan Game-based Interactive Learning Activities for Ekonomiks Grade 9',
+  keywords: ['education', 'board game', 'learning', 'economics', 'interactive', 'AP', 'GILA', 'EKO9'],
+  authors: [{ name: 'Lance' }],
 }
 
 export default function RootLayout({
@@ -60,8 +65,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#4F46E5" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-full font-sans antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.className} min-h-full font-sans antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
         <Providers>

@@ -22,9 +22,9 @@ export default function GameCommentary({ message, type = 'info', duration = 3000
   if (!isVisible) return null;
 
   const bgColor = {
-    success: 'bg-green-100 dark:bg-green-900',
-    error: 'bg-red-100 dark:bg-red-900',
-    info: 'bg-blue-100 dark:bg-blue-900'
+    success: 'bg-green-100/90 dark:bg-green-900/80',
+    error: 'bg-red-100/90 dark:bg-red-900/80',
+    info: 'bg-blue-100/90 dark:bg-blue-900/80'
   }[type];
 
   const textColor = {
@@ -33,9 +33,15 @@ export default function GameCommentary({ message, type = 'info', duration = 3000
     info: 'text-blue-800 dark:text-blue-100'
   }[type];
 
+  const borderColor = {
+    success: 'border-green-300 dark:border-green-700',
+    error: 'border-red-300 dark:border-red-700',
+    info: 'border-blue-300 dark:border-blue-700'
+  }[type];
+
   return (
-    <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg shadow-lg ${bgColor} ${textColor} transition-all duration-300`}>
-      {message}
+    <div className={`p-2 sm:p-3 md:p-4 rounded-lg shadow-md sm:shadow-lg backdrop-blur-sm border ${borderColor} ${bgColor} ${textColor} transition-all duration-300 text-xs sm:text-sm md:text-base max-w-[90vw] md:max-w-2xl mx-auto text-center`}>
+      <div dangerouslySetInnerHTML={{ __html: message }} />
     </div>
   );
 } 

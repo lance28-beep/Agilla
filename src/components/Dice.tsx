@@ -1,264 +1,152 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 interface DiceProps {
   onRollComplete: (value: number) => void;
+  onRollStart?: () => void; // Optional callback when roll starts
   disabled?: boolean;
+  result?: number | null;
 }
 
-const Dice: React.FC<DiceProps> = ({ onRollComplete, disabled = false }) => {
+const Dice: React.FC<DiceProps> = ({ 
+  onRollComplete, 
+  onRollStart,
+  disabled = false, 
+  result = null 
+}) => {
+  const [currentFace, setCurrentFace] = useState(result || 1);
   const [isRolling, setIsRolling] = useState(false);
-  const [currentValue, setCurrentValue] = useState(1);
-  const [showWarning, setShowWarning] = useState(false);
-  const [rollPhase, setRollPhase] = useState<'ready' | 'rolling' | 'complete'>('ready');
+  const [rollInterval, setRollInterval] = useState<NodeJS.Timeout | null>(null);
 
-  const handleRoll = () => {
-    if (isRolling || disabled) {
-      if (disabled) {
-        setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 3000);
-      }
-      return;
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (rollInterval) clearInterval(rollInterval);
+    };
+  }, [rollInterval]);
+
+  // Handle roll animation
+  const handleRoll = useCallback(() => {
+    if (disabled || isRolling) return;
+    
+    // Call onRollStart if provided
+    if (onRollStart) {
+      onRollStart();
     }
     
     setIsRolling(true);
-    setRollPhase('rolling');
     
-    // Enhanced rolling animation sequence
-    let rollCount = 0;
-    const maxRolls = 20;
-    const finalResult = Math.floor(Math.random() * 6) + 1;
+    // Generate random values during animation
+    const interval = setInterval(() => {
+      setCurrentFace(Math.floor(Math.random() * 6) + 1);
+    }, 100);
     
-    const rollInterval = setInterval(() => {
-      rollCount++;
-      if (rollCount >= maxRolls) {
-        clearInterval(rollInterval);
-        setCurrentValue(finalResult);
-        setIsRolling(false);
-        setRollPhase('complete');
-        onRollComplete(finalResult);
-      } else {
-        setCurrentValue(Math.floor(Math.random() * 6) + 1);
-      }
-    }, 150);
-  };
+    setRollInterval(interval);
+    
+    // Stop rolling after 1 second and get final value
+    setTimeout(() => {
+      clearInterval(interval);
+      setRollInterval(null);
+      
+      // Generate final result (1-6)
+      const finalValue = result !== null ? result : Math.floor(Math.random() * 6) + 1;
+      setCurrentFace(finalValue);
+      setIsRolling(false);
+      
+      // Notify parent component
+      onRollComplete(finalValue);
+    }, 1000);
+  }, [disabled, isRolling, onRollComplete, onRollStart, result]);
 
-  // Reset roll phase when dice is ready
-  useEffect(() => {
-    if (!isRolling && rollPhase === 'complete') {
-      const timer = setTimeout(() => setRollPhase('ready'), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isRolling, rollPhase]);
-
-  const dots = Array(currentValue).fill(0);
-
-  const getDotPositions = (value: number) => {
+  const getDiceFace = (value: number) => {
     switch (value) {
-      case 1:
-        return 'justify-center items-center';
-      case 2:
-        return 'justify-between items-center [&>span:first-child]:self-start [&>span:last-child]:self-end';
-      case 3:
-        return 'justify-between items-center [&>span:first-child]:self-start [&>span:nth-child(2)]:self-center [&>span:last-child]:self-end';
-      case 4:
-        return 'justify-between [&>span:nth-child(-n+2)]:self-start [&>span:nth-child(n+3)]:self-end';
-      case 5:
-        return 'justify-between [&>span:nth-child(-n+2)]:self-start [&>span:nth-child(3)]:self-center [&>span:nth-child(n+4)]:self-end';
-      case 6:
-        return 'justify-between [&>span:nth-child(-n+2)]:self-start [&>span:nth-child(n+3):nth-child(-n+4)]:self-center [&>span:nth-child(n+5)]:self-end';
-      default:
-        return '';
-    }
-  };
-
-  // Enhanced animation variants
-  const diceVariants = {
-    ready: {
-      scale: 1,
-      rotate: 0,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 200
-      }
-    },
-    rolling: {
-      scale: [1, 0.9, 1.1, 0.9, 1],
-      rotate: [0, -180, 180, -180, 0],
-      y: [0, -30, 0, -20, 0],
-      transition: {
-        duration: 2,
-        times: [0, 0.2, 0.5, 0.8, 1],
-        ease: "easeInOut"
-      }
-    },
-    complete: {
-      scale: 1.05,
-      rotate: 0,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 10
-      }
-    }
-  };
-
-  const glowVariants = {
-    rolling: {
-      opacity: [0, 0.8, 0],
-      scale: [1, 1.2, 1],
-      transition: {
-        duration: 0.8,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  const dotVariants = {
-    initial: { scale: 0, opacity: 0 },
-    animate: (i: number) => ({
-      scale: 1,
-      opacity: 1,
-      transition: {
-        duration: 0.4,
-        delay: i * 0.1,
-        type: "spring",
-        stiffness: 200,
-        damping: 10
-      }
-    }),
-    rolling: {
-      scale: [1, 0.8, 1],
-      opacity: [1, 0.5, 1],
-      transition: {
-        duration: 0.3,
-        repeat: Infinity
-      }
-    }
-  };
-
-  const warningVariants = {
-    initial: { opacity: 0, y: 10, scale: 0.9 },
-    animate: { 
-      opacity: 1, 
-      y: -50, 
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 200,
-        damping: 15
-      }
-    },
-    exit: { 
-      opacity: 0, 
-      y: -60, 
-      scale: 0.9,
-      transition: {
-        duration: 0.2
-      }
+      case 1: return '⚀';
+      case 2: return '⚁';
+      case 3: return '⚂';
+      case 4: return '⚃';
+      case 5: return '⚄';
+      case 6: return '⚅';
+      default: return '⚀';
     }
   };
 
   return (
-    <div className="relative">
-      <AnimatePresence>
-        {showWarning && (
-          <motion.div
-            variants={warningVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="absolute left-1/2 transform -translate-x-1/2 w-64 p-3 rounded-lg bg-gradient-to-r from-red-500/90 to-pink-500/90 text-white text-sm text-center shadow-lg z-10 backdrop-blur-sm border border-white/20"
-          >
-            <p className="font-medium">⚠️ You&apos;ve already rolled the dice!</p>
-            <p className="text-xs mt-1 text-white/90">Please answer the question at your current position.</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.div
-        onClick={handleRoll}
-        variants={diceVariants}
-        animate={rollPhase}
-        whileHover={!disabled ? { scale: 1.05 } : undefined}
-        className={`
-          relative w-28 h-28 
-          ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}
-          bg-gradient-to-br from-white/95 to-white/75 dark:from-gray-800/95 dark:to-gray-800/75
-          rounded-xl select-none
-          flex flex-wrap p-5 gap-2
-          ${getDotPositions(currentValue)}
-          transition-all duration-300
-          shadow-lg shadow-blue-500/20
-          border-2 border-white/20 dark:border-gray-700/20
-          backdrop-blur-sm
-          transform perspective-1000
-          ${isRolling ? 'animate-shake' : ''}
-        `}
-        style={{
-          boxShadow: isRolling 
-            ? '0 0 30px rgba(59, 130, 246, 0.6)' 
-            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    <motion.div
+      className={`
+        w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24
+        flex items-center justify-center
+        bg-white dark:bg-gray-700
+        rounded-xl shadow-lg
+        text-4xl sm:text-5xl md:text-6xl
+        cursor-pointer
+        dice-container
+        ${disabled ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl'}
+        ${isRolling ? 'animate-pulse-glow' : ''}
+      `}
+      whileHover={!disabled ? { scale: 1.05 } : {}}
+      whileTap={!disabled ? { scale: 0.95 } : {}}
+      animate={{
+        rotate: isRolling ? [0, 360, 720, 1080] : 0,
+        scale: isRolling ? [1, 1.1, 0.9, 1.05, 0.95, 1] : 1,
+      }}
+      transition={{
+        duration: isRolling ? 1 : 0.2,
+        ease: "easeInOut",
+      }}
+      onClick={handleRoll}
+    >
+      <motion.span
+        animate={{ 
+          opacity: isRolling ? [1, 0.7, 1, 0.7, 1] : 1,
+          scale: isRolling ? [1, 1.2, 0.8, 1.1, 0.9, 1] : 1,
         }}
+        transition={{ duration: isRolling ? 1 : 0.2 }}
+        className={`
+          dice-face
+          ${isRolling ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200'}
+        `}
       >
-        <AnimatePresence>
-          {isRolling && (
-            <motion.div
-              variants={glowVariants}
-              animate="rolling"
-              className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20"
-            />
-          )}
-        </AnimatePresence>
-
-        {dots.map((_, i) => (
-          <motion.span
-            key={i}
-            custom={i}
-            variants={dotVariants}
-            initial="initial"
-            animate={isRolling ? "rolling" : "animate"}
-            className={`
-              w-5 h-5 rounded-full 
-              bg-gradient-to-br from-blue-600 to-purple-600
-              dark:from-blue-400 dark:to-purple-400
-              shadow-lg
-              ${isRolling ? 'animate-pulse' : ''}
-            `}
-          />
-        ))}
-      </motion.div>
-
-      {/* Roll status label */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mt-4 text-center"
-      >
-        <span className={`text-sm font-medium ${disabled ? 'text-red-500' : 'text-blue-500'}`}>
-          {disabled ? '🚫 No more rolls' : '🎲 Click to roll!'}
-        </span>
-      </motion.div>
-    </div>
+        {getDiceFace(currentFace)}
+      </motion.span>
+    </motion.div>
   );
 };
 
-// Add these keyframes to your globals.css
+// Add these styles to your globals.css
 const styles = `
 @keyframes shake {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(-12deg) scale(0.95); }
-  75% { transform: rotate(12deg) scale(1.05); }
+  0%, 100% { transform: rotate(0deg) translateY(0) scale(1); }
+  25% { transform: rotate(-12deg) translateY(-6px) scale(0.95); }
+  75% { transform: rotate(12deg) translateY(-3px) scale(1.05); }
 }
 
 .animate-shake {
   animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) infinite;
+}
+
+.dice-container {
+  transform-style: preserve-3d;
+}
+
+.dot {
+  @apply absolute w-2 h-2 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-300 dark:to-gray-400;
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.2);
+}
+
+.center-center { @apply left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2; }
+.top-left { @apply left-1 md:left-1.5 lg:left-2 top-1 md:top-1.5 lg:top-2; }
+.top-right { @apply right-1 md:right-1.5 lg:right-2 top-1 md:top-1.5 lg:top-2; }
+.center-left { @apply left-1 md:left-1.5 lg:left-2 top-1/2 transform -translate-y-1/2; }
+.center-right { @apply right-1 md:right-1.5 lg:right-2 top-1/2 transform -translate-y-1/2; }
+.bottom-left { @apply left-1 md:left-1.5 lg:left-2 bottom-1 md:bottom-1.5 lg:bottom-2; }
+.bottom-right { @apply right-1 md:right-1.5 lg:right-2 bottom-1 md:bottom-1.5 lg:bottom-2; }
+.top-center { @apply left-1/2 top-1 md:top-1.5 lg:top-2 transform -translate-x-1/2; }
+.bottom-center { @apply left-1/2 bottom-1 md:bottom-1.5 lg:bottom-2 transform -translate-x-1/2; }
+
+.perspective-1000 {
+  perspective: 1000px;
 }
 `;
 
