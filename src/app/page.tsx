@@ -187,9 +187,6 @@ export default function Home() {
     });
     
     dispatch({ type: 'MOVE_PLAYER', payload: value });
-<<<<<<< Updated upstream
-    setCanInteractWithSpace(true);
-=======
     
     if (value === 6) {
       setCommentary({ 
@@ -199,7 +196,6 @@ export default function Home() {
     } else {
       setCanInteractWithSpace(true);
     }
->>>>>>> Stashed changes
     setShowGameControlModal(false);
   };
 

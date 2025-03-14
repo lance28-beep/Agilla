@@ -68,16 +68,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         if (player.id === action.payload.playerId) {
           const currentScore = typeof player.score === 'number' ? player.score : 0;
           const points = typeof action.payload.points === 'number' ? action.payload.points : 0;
-<<<<<<< Updated upstream
-          const newScore = Math.max(0, currentScore + points);
-          return { ...player, score: newScore };
-=======
           return { 
             ...player, 
             score: currentScore + points,
             consecutiveWrongAnswers: 0
           };
->>>>>>> Stashed changes
         }
         return player;
       });
