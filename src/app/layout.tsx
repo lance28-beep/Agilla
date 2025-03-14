@@ -1,16 +1,51 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from '../components/Providers';
+import localFont from 'next/font/local';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Load Geist font locally
+const geistSans = localFont({
+  src: [
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-geist-sans',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const geistMono = localFont({
+  src: [
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-geist-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -24,13 +59,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-full font-sans antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
         <Providers>
-          {children}
+          <main className="flex min-h-screen flex-col">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>

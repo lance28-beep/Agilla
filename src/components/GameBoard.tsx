@@ -41,11 +41,11 @@ const useSpaceStyles = () => {
 
       // Color based on points
       switch (points) {
-        case 5:
+        case 20:
           return 'bg-purple-400 dark:bg-purple-600 hover:bg-purple-500 dark:hover:bg-purple-700';
-        case 3:
+        case 10:
           return 'bg-blue-400 dark:bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-700';
-        case 1:
+        case 5:
         default:
           return 'bg-cyan-400 dark:bg-cyan-600 hover:bg-cyan-500 dark:hover:bg-cyan-700';
       }
@@ -124,8 +124,9 @@ const BoardSpace = React.memo(({
                 border-2 border-gray-800 font-bold
                 transform hover:scale-125 transition-transform z-20
                 shadow-md hover:shadow-xl
+                ${player.isSkippingTurn ? 'opacity-50' : ''}
               `}
-              title={`${player.name}`}
+              title={`${player.name}${player.isSkippingTurn ? ' (Skipping Turn)' : ''}`}
             >
               {player.token}
             </span>
@@ -139,7 +140,7 @@ const BoardSpace = React.memo(({
           bg-white dark:bg-gray-800 rounded-full w-6 h-6 flex items-center justify-center
           border-2 border-current shadow-lg group-hover:scale-110 transition-transform
           text-blue-600 dark:text-blue-400">
-          {space.points || 1}
+          {space.points || 5}
         </span>
       )}
     </div>
@@ -231,9 +232,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
   // Memoize legend items
   const legendItems = useMemo(() => [
     { type: 'start', points: 0, label: 'Start Space' },
-    { type: 'question', points: 1, label: 'Basic Question (1pt)' },
-    { type: 'question', points: 3, label: 'Advanced Question (3pts)' },
-    { type: 'question', points: 5, label: 'Expert Question (5pts)' },
+    { type: 'question', points: 5, label: 'Basic Question (5pts)' },
+    { type: 'question', points: 10, label: 'Advanced Question (10pts)' },
+    { type: 'question', points: 20, label: 'Expert Question (20pts)' },
     { type: 'finish', points: 0, label: 'Finish Line' }
   ], []);
 

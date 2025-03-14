@@ -53,7 +53,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const updatedPlayers = state.players.map((player, index) => {
         if (index === state.currentPlayerIndex) {
           const newPosition = Math.min(player.position + action.payload, 99);
-          return { ...player, position: newPosition };
+          return { 
+            ...player, 
+            position: newPosition,
+            isSkippingTurn: false
+          };
         }
         return player;
       });
@@ -64,8 +68,16 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         if (player.id === action.payload.playerId) {
           const currentScore = typeof player.score === 'number' ? player.score : 0;
           const points = typeof action.payload.points === 'number' ? action.payload.points : 0;
+<<<<<<< Updated upstream
           const newScore = Math.max(0, currentScore + points);
           return { ...player, score: newScore };
+=======
+          return { 
+            ...player, 
+            score: currentScore + points,
+            consecutiveWrongAnswers: 0
+          };
+>>>>>>> Stashed changes
         }
         return player;
       });
@@ -85,7 +97,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'SKIP_TURN':
       const playersWithSkip = state.players.map(player => {
         if (player.id === action.payload) {
-          return { ...player, isSkippingTurn: true };
+          return { 
+            ...player, 
+            isSkippingTurn: true,
+            consecutiveWrongAnswers: 0
+          };
         }
         return { ...player, isSkippingTurn: false };
       });

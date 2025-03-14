@@ -187,7 +187,19 @@ export default function Home() {
     });
     
     dispatch({ type: 'MOVE_PLAYER', payload: value });
+<<<<<<< Updated upstream
     setCanInteractWithSpace(true);
+=======
+    
+    if (value === 6) {
+      setCommentary({ 
+        message: `${currentPlayer.name} rolled a 6! They get another turn!`,
+        type: 'success'
+      });
+    } else {
+      setCanInteractWithSpace(true);
+    }
+>>>>>>> Stashed changes
     setShowGameControlModal(false);
   };
 
