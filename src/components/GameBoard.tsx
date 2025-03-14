@@ -224,7 +224,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         {currentPlayerPosition > 0 && (
           <div className="mb-2 sm:mb-4 flex justify-center">
             <div className="px-3 py-1 bg-yellow-100/80 dark:bg-yellow-900/30 rounded-full text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 font-medium flex items-center gap-1 shadow-sm backdrop-blur-sm border border-yellow-200 dark:border-yellow-800/50">
-              <span>{state.players[state.currentPlayerIndex].name}'s Position:</span>
+              <span>{state.players[state.currentPlayerIndex].name}&apos;s Position:</span>
               <span className="font-bold">{currentPlayerPosition + 1}</span>
               <span className="text-yellow-500">📍</span>
               {canInteractWithSpace && (
@@ -273,7 +273,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           <div className="bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-md backdrop-blur-sm border border-white/20 dark:border-gray-700/20 max-w-md">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">How to Play:</h3>
             <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-1 list-decimal list-inside">
-              <li>Roll the dice by clicking the "Roll" button</li>
+              <li>Roll the dice by clicking the &quot;Roll&quot; button</li>
               <li>Your token will move automatically to the new position</li>
               <li>Click on your current position to interact with the space</li>
               <li>Answer correctly to earn points equal to your dice roll</li>

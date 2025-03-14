@@ -82,7 +82,7 @@ const CelebrationModal: React.FC<CelebrationModalProps> = ({
                   You are a true genius! 🧠
                 </p>
                 <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                  You've reached the finish line with {score} points!
+                  You&apos;ve reached the finish line with {score} points!
                 </p>
               </div>
 
@@ -92,7 +92,7 @@ const CelebrationModal: React.FC<CelebrationModalProps> = ({
                   Your knowledge is truly remarkable! 🌟
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  You've proven yourself as a master of economics! 📚
+                  You&apos;ve proven yourself as a master of economics! 📚
                 </p>
               </div>
             </div>
