@@ -125,23 +125,19 @@ const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const handleSpaceClick = (space: Space) => {
-    // Only show roll prompt if trying to interact without rolling
     if (!canInteractWithSpace) {
       setShowRollPrompt(true);
       return;
     }
 
-    // Allow interaction only with current position and when canInteractWithSpace is true
     if (space.id !== currentPlayerPosition) {
       return;
     }
 
-    // Don't allow interaction with start/finish spaces
     if (space.type === 'start' || space.type === 'finish') {
       return;
     }
 
-    // Only allow interaction with question spaces
     if (space.type === 'question') {
       onSpaceClick(space.type);
     }
@@ -149,24 +145,21 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   // Memoize legend items for better performance
   const legendItems = useMemo(() => [
-    { type: 'start', points: 0, label: 'Start' },
-    { type: 'finish', points: 0, label: 'Finish' },
-    { type: 'question', points: 1, label: 'Question Space' },
+    { type: 'start', points: 0, label: 'Simula' },
+    { type: 'finish', points: 0, label: 'Tapos' },
+    { type: 'question', points: 1, label: 'Tanong' },
   ], []);
 
   // Memoize the board spaces to prevent unnecessary re-renders
   const boardSpaces = useMemo(() => {
     return spaces.map((space, index) => {
-      // Calculate the actual index for the snake pattern
       let row = Math.floor(index / 10);
       let col = index % 10;
       
-      // Reverse direction for odd rows (0-indexed)
       if (row % 2 === 1) {
         col = 9 - col;
       }
       
-      // Calculate the actual index in the array
       const actualIndex = row * 10 + col;
       const actualSpace = spaces[actualIndex];
       
@@ -211,79 +204,79 @@ const GameBoard: React.FC<GameBoardProps> = ({
   }, [currentPlayerPosition, previousPosition, isReturningToPrevious]);
 
   return (
-    <div className="w-full h-full overflow-auto p-1 sm:p-2 md:p-4 game-board-container">
-      <div className="relative w-full max-w-7xl mx-auto">
-        {/* Board Legend */}
-        <div className="mb-2 sm:mb-4 flex flex-wrap gap-1 sm:gap-2 justify-center sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md py-2 rounded-lg">
-          {legendItems.map((item) => (
-            <LegendItem key={`${item.type}-${item.points}`} {...item} />
-          ))}
-        </div>
-        
-        {/* Current Position Indicator */}
-        {currentPlayerPosition > 0 && (
-          <div className="mb-2 sm:mb-4 flex justify-center sticky top-14 z-10">
-            <div className="px-3 py-1 bg-yellow-100/80 dark:bg-yellow-900/30 rounded-full text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 font-medium flex items-center gap-1 shadow-sm backdrop-blur-sm border border-yellow-200 dark:border-yellow-800/50">
-              <span>{state.players[state.currentPlayerIndex].name}&apos;s Position:</span>
-              <span className="font-bold">{currentPlayerPosition + 1}</span>
-              <span className="text-yellow-500">📍</span>
-              {canInteractWithSpace && (
-                <span className="ml-1 text-green-600 dark:text-green-400 text-[10px] xs:text-xs animate-pulse">
-                  (Click to interact)
-                </span>
-              )}
-            </div>
+    <div className="w-full max-w-4xl mx-auto px-1 sm:px-2">
+      {/* Board Legend */}
+      <div className="mb-1 sm:mb-2 flex flex-wrap gap-1 justify-center">
+        {legendItems.map((item) => (
+          <div
+            key={item.type}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full
+                     bg-white/80 dark:bg-gray-800/80 shadow-sm
+                     border border-gray-200 dark:border-gray-700
+                     text-xs text-gray-700 dark:text-gray-300"
+          >
+            <span className="w-3 h-3 flex items-center justify-center rounded-full bg-blue-500/10">
+              {item.type === 'start' ? '🚀' : item.type === 'finish' ? '🏁' : '❓'}
+            </span>
+            <span>{item.label}</span>
           </div>
-        )}
-        
-        {/* Game Board Grid - Optimized 10x10 Layout */}
-        <div className="game-board glass-effect rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-4 shadow-xl border border-white/30 dark:border-gray-700/30 bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm mb-20 sm:mb-10">
-          {/* Grid Container with Fixed Aspect Ratio */}
-          <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
-            <div className="absolute inset-0 grid grid-cols-10 gap-0.5 xs:gap-1 sm:gap-1.5 md:gap-2">
-              {boardSpaces.map(({ space, actualIndex }) => {
-                // Find players on this space
-                const playersOnSpace = getPlayerTokens(space.id);
-                
-                // Check if this space is interactive
-                const isInteractive = canInteractWithSpace && space.id === currentPlayerPosition;
-                
-                return (
-                  <BoardSpace
-                    key={space.id}
-                    space={space}
-                    isCurrentPosition={space.id === currentPlayerPosition}
-                    canInteract={canInteractWithSpace}
-                    playersOnSpace={playersOnSpace}
-                    onSpaceClick={handleSpaceClick}
-                    currentPlayerIndex={state.currentPlayerIndex}
-                    onHover={() => setHoveredSpace(space.id)}
-                    onLeave={() => setHoveredSpace(null)}
-                    isHovered={hoveredSpace === space.id}
-                    isInteractive={isInteractive}
-                  />
-                );
-              })}
-            </div>
+        ))}
+      </div>
+
+      {/* Current Position Indicator */}
+      {currentPlayerPosition > 0 && (
+        <div className="mb-1 sm:mb-2 flex justify-center">
+          <div className="px-2 py-0.5 bg-yellow-100/80 dark:bg-yellow-900/30 
+                       rounded-full text-xs text-yellow-700 dark:text-yellow-300 
+                       font-medium flex items-center gap-1 shadow-sm backdrop-blur-sm 
+                       border border-yellow-200 dark:border-yellow-800/50">
+            <span>{state.players[state.currentPlayerIndex].name}</span>
+            <span className="font-bold">{currentPlayerPosition + 1}</span>
+            <span className="text-yellow-500">📍</span>
           </div>
         </div>
-        
-        {/* Desktop Board Controls */}
-        <div className="hidden md:flex justify-center mt-4">
-          <div className="bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg shadow-md backdrop-blur-sm border border-white/20 dark:border-gray-700/20 max-w-md">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">How to Play:</h3>
-            <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-1 list-decimal list-inside">
-              <li>Roll the dice by clicking the &quot;Roll&quot; button</li>
-              <li>Your token will move automatically to the new position</li>
-              <li>Click on your current position to interact with the space</li>
-              <li>Answer correctly to earn points equal to your dice roll</li>
-              <li>Answer incorrectly to return to your previous position</li>
-              <li>The first player to reach position 100 wins!</li>
-            </ol>
+      )}
+
+      {/* Game Board Grid */}
+      <div className="relative bg-gradient-to-br from-blue-500/5 to-purple-500/5 
+                    rounded-lg p-1 sm:p-1.5 overflow-hidden
+                    border border-white/10 dark:border-gray-800/10
+                    shadow-[inset_0_0_20px_rgba(0,0,0,0.1)]
+                    dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]">
+        {/* Grid Pattern Background */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="w-full h-full grid grid-cols-10 grid-rows-10">
+            {Array.from({ length: 100 }).map((_, i) => (
+              <div key={i} className="border border-gray-500/20" />
+            ))}
           </div>
+        </div>
+
+        {/* Game Grid */}
+        <div className="relative grid grid-cols-10 gap-0.5 aspect-[10/2]">
+          {boardSpaces.map(({ space, actualIndex }) => {
+            const playersOnSpace = getPlayerTokens(space.id);
+            const isInteractive = canInteractWithSpace && space.id === currentPlayerPosition;
+
+            return (
+              <BoardSpace
+                key={space.id}
+                space={space}
+                isCurrentPosition={space.id === currentPlayerPosition}
+                canInteract={canInteractWithSpace}
+                playersOnSpace={playersOnSpace}
+                onSpaceClick={handleSpaceClick}
+                currentPlayerIndex={state.currentPlayerIndex}
+                onHover={() => setHoveredSpace(space.id)}
+                onLeave={() => setHoveredSpace(null)}
+                isHovered={hoveredSpace === space.id}
+                isInteractive={isInteractive}
+              />
+            );
+          })}
         </div>
       </div>
-      
+
       {/* Roll Prompt Dialog */}
       <RollPromptDialog isOpen={showRollPrompt} onClose={() => setShowRollPrompt(false)} />
     </div>

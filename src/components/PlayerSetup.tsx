@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { Player } from '../types/game';
+import { Player, GameDifficulty } from '../types/game';
 
 const PlayerSetup: React.FC = () => {
   const { dispatch } = useGame();
+  const [selectedDifficulty, setSelectedDifficulty] = useState<GameDifficulty>('beginner');
   const [players, setPlayers] = useState<Omit<Player, 'id'>[]>([
     { 
       name: '', 
@@ -16,7 +17,8 @@ const PlayerSetup: React.FC = () => {
       isSkippingTurn: false,
       previousPosition: 0,
       startingPosition: 0,
-      moveHistory: []
+      moveHistory: [],
+      difficulty: 'beginner'
     }
   ]);
 
@@ -34,7 +36,8 @@ const PlayerSetup: React.FC = () => {
         isSkippingTurn: false,
         previousPosition: 0,
         startingPosition: 0,
-        moveHistory: []
+        moveHistory: [],
+        difficulty: selectedDifficulty
       }]);
     }
   }
@@ -74,6 +77,7 @@ const PlayerSetup: React.FC = () => {
     const playersWithIds = players.map((player, index) => ({
       ...player,
       id: index + 1,
+      difficulty: selectedDifficulty,
       previousPosition: 0,
       startingPosition: 0,
       moveHistory: [0]
@@ -84,7 +88,10 @@ const PlayerSetup: React.FC = () => {
     // Dispatch the START_GAME action
     dispatch({
       type: 'START_GAME',
-      payload: playersWithIds
+      payload: {
+        players: playersWithIds,
+        difficulty: selectedDifficulty
+      }
     });
   }
 
@@ -218,6 +225,34 @@ const PlayerSetup: React.FC = () => {
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4 animate-slideUp">
+          {/* Difficulty Selection */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Select Difficulty
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {(['beginner', 'intermediate', 'expert'] as GameDifficulty[]).map((difficulty) => (
+                <button
+                  key={difficulty}
+                  onClick={() => setSelectedDifficulty(difficulty)}
+                  className={`
+                    px-4 py-2 rounded-lg text-sm font-medium capitalize
+                    transition-all duration-200 transform hover:scale-105
+                    ${selectedDifficulty === difficulty
+                      ? 'bg-blue-500 text-white shadow-lg scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }
+                  `}
+                >
+                  {difficulty}
+                  {difficulty === 'beginner' && ' (20 cards)'}
+                  {difficulty === 'intermediate' && ' (50 cards)'}
+                  {difficulty === 'expert' && ' (100 cards)'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-4">
             {players.map((player, index) => (
               <div 

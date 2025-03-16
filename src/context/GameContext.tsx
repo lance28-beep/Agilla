@@ -1,10 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useReducer } from 'react';
-import { GameState, Player, Question, EventCard } from '../types/game';
+import { GameState, Player, Question, EventCard, GameDifficulty } from '../types/game';
 
 type GameAction =
-  | { type: 'START_GAME'; payload: Player[] }
+  | { type: 'START_GAME'; payload: { players: Player[]; difficulty: GameDifficulty } }
   | { type: 'NEXT_PLAYER' }
   | { type: 'MOVE_PLAYER'; payload: number }
   | { type: 'UPDATE_SCORE'; payload: { playerId: number; points: number } }
@@ -26,7 +26,8 @@ const initialState: GameState = {
   gameEnded: false,
   winner: null,
   currentQuestion: null,
-  currentEvent: null
+  currentEvent: null,
+  difficulty: 'beginner'
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -37,12 +38,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       console.log("Starting game with players:", action.payload);
       return {
         ...state,
-        players: action.payload.map(player => ({
-          ...player,
-          previousPosition: 0,
-          startingPosition: 0,
-          moveHistory: [0]
-        })),
+        players: action.payload.players,
+        difficulty: action.payload.difficulty,
         gameStarted: true,
         currentPlayerIndex: 0,
         currentQuestion: null,
@@ -59,12 +56,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         currentPlayerIndex: nextIndex
       };
 
-    case 'MOVE_PLAYER':
+    case 'MOVE_PLAYER': {
+      const maxPosition = state.difficulty === 'beginner' ? 19 : 
+                         state.difficulty === 'intermediate' ? 49 : 99;
+      
       return {
         ...state,
         players: state.players.map(player => {
           if (player.id === state.players[state.currentPlayerIndex].id) {
-            const newPosition = Math.min(99, Math.max(0, player.position + action.payload));
+            const newPosition = Math.min(maxPosition, Math.max(0, player.position + action.payload));
             return {
               ...player,
               previousPosition: player.position,
@@ -75,6 +75,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           return player;
         })
       };
+    }
 
     case 'UPDATE_SCORE':
       const playersWithUpdatedScore = state.players.map(player => {
@@ -143,7 +144,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 const GameContext = createContext<{
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
-} | null>(null);
+}>({
+  state: initialState,
+  dispatch: () => null,
+});
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
@@ -161,4 +165,6 @@ export const useGame = () => {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
-}; 
+};
+
+export default GameContext; 

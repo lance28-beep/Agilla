@@ -7,7 +7,7 @@ import QuestionModal from '../components/QuestionModal';
 import EventModal from '../components/EventModal';
 import PlayerSetup from '../components/PlayerSetup';
 import GameControlModal from '../components/GameControlModal';
-import { questions, events } from '../data/gameData';
+import { questions, events, getQuestions, getEvents } from '../data/gameData';
 import GameCommentary from '../components/GameCommentary';
 import { Space } from '../types/game';
 import React from 'react';
@@ -148,6 +148,7 @@ GameControls.displayName = 'GameControls';
 
 export default function Home() {
   const { state, dispatch } = useGame();
+  const { difficulty } = state;
   const [showGameControlModal, setShowGameControlModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -174,20 +175,17 @@ export default function Home() {
 
   const currentPlayer = state.players[state.currentPlayerIndex];
 
-  // Reset game states when player changes
-  useEffect(() => {
-    setLastRoll(null);
-    setHasRolled(false);
-    setCanInteractWithSpace(false);
-    setIsProcessingTurn(false);
-    setShowFeedbackDialog(false);
-    setTurnAttempt(0);
-    setIsReturningToPrevious(false);
-  }, [state.currentPlayerIndex]);
+  // Get questions and events based on difficulty
+  const questions = getQuestions(difficulty);
+  const events = getEvents(difficulty);
 
-  const spaces: Space[] = Array.from({ length: 100 }, (_, index) => {
+  // Create spaces based on difficulty
+  const boardSize = difficulty === 'beginner' ? 20 :
+                   difficulty === 'intermediate' ? 50 : 100;
+
+  const spaces: Space[] = Array.from({ length: boardSize }, (_, index) => {
     if (index === 0) return { id: 0, type: 'start' };
-    if (index === 99) return { id: 99, type: 'finish' };
+    if (index === boardSize - 1) return { id: index, type: 'finish' };
 
     // Assign point values between 1 and 5
     let points = 1; // default points
@@ -200,6 +198,17 @@ export default function Home() {
       points
     };
   });
+
+  // Reset game states when player changes
+  useEffect(() => {
+    setLastRoll(null);
+    setHasRolled(false);
+    setCanInteractWithSpace(false);
+    setIsProcessingTurn(false);
+    setShowFeedbackDialog(false);
+    setTurnAttempt(0);
+    setIsReturningToPrevious(false);
+  }, [state.currentPlayerIndex]);
 
   const handleRollComplete = (value: number) => {
     // Validate dice roll value with strict type checking

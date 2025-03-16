@@ -2,6 +2,8 @@ export type Category = "Opportunity Cost" | "Trade-off" | "Marginal Thinking" | 
 
 export type Difficulty = "easy" | "medium" | "hard" | "expert";
 
+export type GameDifficulty = 'beginner' | 'intermediate' | 'expert';
+
 export interface Question {
   id: number;
   text: string;
@@ -30,7 +32,8 @@ export interface Player {
   score: number;
   consecutiveWrongAnswers: number;
   isSkippingTurn: boolean;
-  moveHistory: number[]; // Track all positions visited
+  moveHistory: number[];
+  difficulty: GameDifficulty;
 }
 
 export interface GameState {
@@ -38,12 +41,13 @@ export interface GameState {
   currentPlayerIndex: number;
   questions: Question[];
   events: EventCard[];
-  currentQuestion: Question | null;
-  currentEvent: EventCard | null;
   usedQuestionIds: Set<number>;
   gameStarted: boolean;
   gameEnded: boolean;
   winner: Player | null;
+  currentQuestion: Question | null;
+  currentEvent: EventCard | null;
+  difficulty: GameDifficulty;
 }
 
 export type SpaceType = "question" | "start" | "finish";
@@ -52,4 +56,16 @@ export interface Space {
   id: number;
   type: SpaceType;
   points?: number;
+}
+
+export interface GameCell {
+  id: number;
+  isBlocked?: boolean;
+  isStart?: boolean;
+  isEnd?: boolean;
+}
+
+export interface GameProps {
+  difficulty: GameDifficulty;
+  onComplete: (moves: number) => void;
 } 
