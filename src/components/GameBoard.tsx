@@ -27,14 +27,14 @@ interface GameBoardProps {
 
 // Memoized LegendItem component
 const LegendItem = React.memo(({ type, points, label }: { type: string; points: number; label: string }) => {
-  const styles = useSpaceStyles();
+  const spaceStyle = useSpaceStyles(type);
   
   return (
     <div className="flex items-center gap-1 md:gap-2 p-1 md:p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-700/20 transition-colors group backdrop-blur-sm">
       <div 
         className={`
           w-6 h-6 md:w-7 md:h-7 rounded-md md:rounded-lg flex items-center justify-center text-sm md:text-base
-          bg-gradient-to-br ${styles.getSpaceColor({ type, points })}
+          bg-gradient-to-br ${spaceStyle}
           shadow-sm md:shadow-md group-hover:shadow-md transition-all
           group-hover:scale-105
         `}
@@ -55,7 +55,7 @@ const LegendItem = React.memo(({ type, points, label }: { type: string; points: 
             ❓
           </motion.span>
         ) : (
-          styles.getSpaceIcon(type)
+          type === 'start' ? '🚀' : type === 'finish' ? '🏁' : '🎲'
         )}
       </div>
       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
