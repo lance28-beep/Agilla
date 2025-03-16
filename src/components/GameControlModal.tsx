@@ -39,15 +39,13 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
   const [rollValue, setRollValue] = useState<number | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [rollingNumbers, setRollingNumbers] = useState<number[]>([]);
+  const [rollAttempts, setRollAttempts] = useState(0);
+  const MAX_ROLL_ATTEMPTS = 3;
   const rollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const rollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const rollAttemptsRef = useRef(0);
-  const isRollInProgressRef = useRef(false);
-  const handleRollCompleteRef = useRef<((value: number) => void) | null>(null);
 
   // Cleanup function to clear all timeouts and intervals
   const cleanupRollTimers = useCallback(() => {
-    console.log('GameControlModal: Cleaning up roll timers');
     if (rollIntervalRef.current) {
       clearInterval(rollIntervalRef.current);
       rollIntervalRef.current = null;
@@ -56,24 +54,18 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
       clearTimeout(rollTimeoutRef.current);
       rollTimeoutRef.current = null;
     }
-    setIsRolling(false);
-    setTurnInProgress(false);
-    setRollCompleted(false);
-    setRollValue(null);
-    isRollInProgressRef.current = false;
   }, []);
 
   // Reset states when modal opens or player changes
   useEffect(() => {
     if (isOpen) {
-      console.log('GameControlModal: Modal opened - resetting states');
       setShowError(false);
       setRollCompleted(false);
       setIsRolling(false);
       setRollValue(null);
       setTurnInProgress(false);
       setRollingNumbers([]);
-      rollAttemptsRef.current = 0;
+      setRollAttempts(0);
       cleanupRollTimers();
       // Only reset turn count if this is a new player's turn
       if (!hasRolled) {
@@ -81,58 +73,81 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
       }
     }
 
-    // Cleanup on unmount
-    return cleanupRollTimers;
+    return () => {
+      cleanupRollTimers();
+      setTurnInProgress(false);
+      setIsRolling(false);
+    };
   }, [isOpen, hasRolled, cleanupRollTimers]);
 
-  const handleRoll = useCallback(() => {
-    if (isRolling || hasRolled || turnInProgress || rollCompleted || isRollInProgressRef.current) {
-      console.log('GameControlModal: Roll prevented - states:', {
-        isRolling,
-        hasRolled,
-        turnInProgress,
-        rollCompleted,
-        isRollInProgress: isRollInProgressRef.current
-      });
-      return;
+  // Validate dice roll value
+  const validateRollValue = (value: number): boolean => {
+    return Number.isInteger(value) && value >= 1 && value <= 6;
+  };
+
+  // Generate a valid roll value
+  const generateValidRollValue = (): number => {
+    const value = Math.floor(Math.random() * 6) + 1;
+    return validateRollValue(value) ? value : 1; // Fallback to 1 if invalid
+  };
+
+  // Handle roll completion
+  const handleRollComplete = useCallback((value: number) => {
+    if (rollCompleted) return; // Prevent double execution
+    
+    // Validate dice result
+    if (!validateRollValue(value)) {
+      console.error("Invalid dice roll result:", value);
+      setShowError(true);
+      setIsRolling(false);
+      setTurnInProgress(false);
+      setRollCompleted(false);
+      setRollAttempts(prev => prev + 1);
+      
+      // Retry roll if under max attempts
+      if (rollAttempts < MAX_ROLL_ATTEMPTS) {
+        setTimeout(() => {
+          handleRoll();
+        }, 1000);
+        return;
+      } else {
+        // Use fallback value after max attempts
+        value = 1;
+        console.error("Max roll attempts reached. Using fallback value:", value);
+      }
     }
     
-    rollAttemptsRef.current += 1;
-    console.log('GameControlModal: Starting roll attempt #', rollAttemptsRef.current);
-    
-    // Clean up any existing timers first
     cleanupRollTimers();
+    setRollCompleted(true);
+    setIsRolling(false);
+    setTurnInProgress(false); // Reset turn progress before notifying parent
+    setTurnCount(prev => prev + 1);
+    
+    // Notify parent component
+    onRollAttempt(); // Set hasRolled flag in parent
+    onRollComplete(value);
+  }, [onRollAttempt, onRollComplete, cleanupRollTimers, rollCompleted, rollAttempts]);
+
+  const handleRoll = () => {
+    if (isRolling || hasRolled || turnInProgress || rollCompleted) {
+      console.log("Roll prevented: already rolling or turn in progress");
+      return;
+    }
     
     setIsRolling(true);
     setTurnInProgress(true);
     setShowError(false);
-    setRollCompleted(false);
-    isRollInProgressRef.current = true;
+    setRollCompleted(false); // Reset roll completion state
 
-    // Generate random numbers for rolling effect (ensure all are valid)
-    const numbers = Array.from({ length: 10 }, () => {
-      const roll = Math.floor(Math.random() * 6) + 1;
-      return roll >= 1 && roll <= 6 ? roll : 1;
-    });
+    // Generate valid random numbers for rolling effect
+    const numbers = Array.from({ length: 10 }, () => generateValidRollValue());
     setRollingNumbers(numbers);
 
-    // Generate final roll value with guaranteed valid number
-    let finalRoll = Math.floor(Math.random() * 6) + 1;
+    // Generate final roll value
+    let finalRoll = generateValidRollValue();
     
-    // Ensure final roll is valid, if not, keep generating until valid
-    let attempts = 0;
-    while ((finalRoll < 1 || finalRoll > 6) && attempts < 3) {
-      finalRoll = Math.floor(Math.random() * 6) + 1;
-      attempts++;
-    }
-    
-    // If still invalid after retries, use a safe default
-    if (finalRoll < 1 || finalRoll > 6) {
-      console.error("GameControlModal: Failed to generate valid final roll after retries");
-      finalRoll = 1;
-    }
-
-    console.log('GameControlModal: Generated final roll:', finalRoll);
+    // Clear any existing timers
+    cleanupRollTimers();
 
     // Simulate rolling animation
     let currentIndex = 0;
@@ -144,58 +159,21 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
         cleanupRollTimers();
         setRollValue(finalRoll);
         rollTimeoutRef.current = setTimeout(() => {
-          if (handleRollCompleteRef.current) {
-            handleRollCompleteRef.current(finalRoll);
-          }
+          handleRollComplete(finalRoll);
         }, 500);
       }
     }, 300);
-  }, [isRolling, hasRolled, turnInProgress, rollCompleted, cleanupRollTimers, setRollingNumbers, setRollValue]);
+  };
 
-  // Handle roll completion
-  const handleRollComplete = useCallback((value: number) => {
-    console.log('GameControlModal: Roll complete - value:', value);
-    
-    if (rollCompleted || isRollInProgressRef.current) {
-      console.log('GameControlModal: Roll already completed or in progress, ignoring');
-      return;
-    }
-    
-    // Validate dice result and reroll if invalid
-    if (!value || value < 1 || value > 6) {
-      console.error("GameControlModal: Invalid dice roll result:", value);
-      setShowError(true);
-      cleanupRollTimers();
-      
-      // Automatically retry after a short delay
-      setTimeout(() => {
-        handleRoll();
-      }, 1000);
-      return;
-    }
-    
-    isRollInProgressRef.current = true;
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    if (isRolling) return;
     cleanupRollTimers();
-    setRollCompleted(true);
-    setTurnInProgress(true);
-    setTurnCount(prev => prev + 1);
-    onRollAttempt(); // Set hasRolled flag in parent
-    onRollComplete(value);
-  }, [onRollAttempt, onRollComplete, cleanupRollTimers, rollCompleted, handleRoll]);
-
-  // Update the ref when handleRollComplete changes
-  useEffect(() => {
-    handleRollCompleteRef.current = handleRollComplete;
-  }, [handleRollComplete]);
-
-  // Add effect to handle modal open/close
-  useEffect(() => {
-    if (!isOpen) {
-      console.log('GameControlModal: Modal closing - cleaning up');
-      cleanupRollTimers();
-      setShowError(false);
-    }
-  }, [isOpen, cleanupRollTimers]);
+    setTurnInProgress(false);
+    setShowError(false);
+    onClose();
+  };
 
   // Reset error state when modal opens
   useEffect(() => {
@@ -203,14 +181,6 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
       setShowError(false);
     }
   }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleClose = () => {
-    if (isRolling) return;
-    cleanupRollTimers();
-    onClose();
-  };
 
   return (
     <AnimatePresence>
@@ -248,7 +218,7 @@ const GameControlModal: React.FC<GameControlModalProps> = ({
                 animate={{ y: 0, opacity: 1 }}
               >
                 <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
-                  {currentPlayer.name}&apos;s Turn
+                  {currentPlayer.name}'s Turn
                 </h2>
                 <span className="text-2xl md:text-3xl animate-bounce">
                   {currentPlayer.token}

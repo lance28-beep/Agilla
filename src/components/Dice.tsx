@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 interface DiceProps {
@@ -19,44 +19,36 @@ const Dice: React.FC<DiceProps> = ({
   const [currentFace, setCurrentFace] = useState(result || 1);
   const [isRolling, setIsRolling] = useState(false);
   const [rollInterval, setRollInterval] = useState<NodeJS.Timeout | null>(null);
-  const [rollCount, setRollCount] = useState(0);
-  const rollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isRollInProgressRef = useRef(false);
+  const [errorCount, setErrorCount] = useState(0);
+  const MAX_ERROR_RETRIES = 3;
 
-  // Cleanup function
-  const cleanup = useCallback(() => {
-    console.log('Dice: Cleaning up timers');
-    if (rollInterval) {
-      clearInterval(rollInterval);
-      setRollInterval(null);
-    }
-    if (rollTimeoutRef.current) {
-      clearTimeout(rollTimeoutRef.current);
-      rollTimeoutRef.current = null;
-    }
-    setIsRolling(false);
-    isRollInProgressRef.current = false;
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (rollInterval) clearInterval(rollInterval);
+    };
   }, [rollInterval]);
 
-  // Cleanup on unmount or when disabled changes
-  useEffect(() => {
-    if (disabled) {
-      cleanup();
-    }
-    return cleanup;
-  }, [disabled, cleanup]);
+  // Validate dice value
+  const validateDiceValue = (value: number): boolean => {
+    return Number.isInteger(value) && value >= 1 && value <= 6;
+  };
+
+  // Generate valid dice value
+  const generateValidDiceValue = (): number => {
+    const value = Math.floor(Math.random() * 6) + 1;
+    return validateDiceValue(value) ? value : 1; // Fallback to 1 if invalid
+  };
 
   // Handle roll animation
   const handleRoll = useCallback(() => {
-    if (disabled || isRolling || isRollInProgressRef.current) {
-      console.log('Dice: Roll prevented - disabled:', disabled, 'isRolling:', isRolling, 'isRollInProgress:', isRollInProgressRef.current);
+    if (disabled || isRolling) {
+      console.log("Roll prevented: dice is disabled or already rolling");
       return;
     }
     
-    console.log('Dice: Starting roll #', rollCount + 1);
-    
-    // Clean up any existing timers first
-    cleanup();
+    // Reset error count on new roll
+    setErrorCount(0);
     
     // Call onRollStart if provided
     if (onRollStart) {
@@ -64,59 +56,62 @@ const Dice: React.FC<DiceProps> = ({
     }
     
     setIsRolling(true);
-    isRollInProgressRef.current = true;
-    setRollCount(prev => prev + 1);
     
-    // Generate random values during animation with validation
+    // Generate random values during animation
     const interval = setInterval(() => {
-      const randomValue = Math.floor(Math.random() * 6) + 1;
-      if (randomValue >= 1 && randomValue <= 6) {
-        setCurrentFace(randomValue);
-      }
+      const animationValue = generateValidDiceValue();
+      setCurrentFace(animationValue);
     }, 100);
     
     setRollInterval(interval);
     
     // Stop rolling after 1 second and get final value
-    rollTimeoutRef.current = setTimeout(() => {
-      if (!isRollInProgressRef.current) {
-        console.log('Dice: Roll already completed, skipping final value');
-        return;
+    setTimeout(() => {
+      clearInterval(interval);
+      setRollInterval(null);
+      
+      // Generate final result (1-6)
+      let finalValue: number;
+      
+      if (result !== null && validateDiceValue(result)) {
+        finalValue = result;
+      } else {
+        finalValue = generateValidDiceValue();
       }
 
-      cleanup();
-      
-      // Generate and validate final result
-      let finalValue = result !== null ? result : Math.floor(Math.random() * 6) + 1;
-      
-      // Ensure final value is valid, retry if not
-      let attempts = 0;
-      while ((finalValue < 1 || finalValue > 6) && attempts < 3) {
-        finalValue = Math.floor(Math.random() * 6) + 1;
-        attempts++;
+      // Validate final value
+      if (!validateDiceValue(finalValue)) {
+        setErrorCount(prev => prev + 1);
+        if (errorCount < MAX_ERROR_RETRIES) {
+          // Retry roll if invalid value
+          console.log("Invalid roll value, retrying...");
+          handleRoll();
+          return;
+        } else {
+          // Fallback to 1 after max retries
+          finalValue = 1;
+          console.error('Max dice roll retries reached. Falling back to 1');
+        }
       }
-      
-      // If still invalid after retries, use a safe default
-      if (finalValue < 1 || finalValue > 6) {
-        console.error("Dice: Failed to generate valid dice roll after retries");
-        finalValue = 1; // Safe default
-      }
-      
-      console.log('Dice: Roll complete - value:', finalValue, 'attempts:', attempts);
+
       setCurrentFace(finalValue);
+      setIsRolling(false);
       
-      // Notify parent component with validated result
+      // Notify parent component
       onRollComplete(finalValue);
     }, 1000);
-  }, [disabled, isRolling, onRollComplete, onRollStart, result, rollCount, cleanup]);
+  }, [disabled, isRolling, onRollComplete, onRollStart, result, errorCount, validateDiceValue, generateValidDiceValue]);
 
-  // Add effect to handle result changes
+  // Reset rolling state when disabled prop changes
   useEffect(() => {
-    if (result !== null) {
-      console.log('Dice: Result prop changed - value:', result);
-      setCurrentFace(result);
+    if (disabled) {
+      setIsRolling(false);
+      if (rollInterval) {
+        clearInterval(rollInterval);
+        setRollInterval(null);
+      }
     }
-  }, [result]);
+  }, [disabled, rollInterval]);
 
   const getDiceFace = (value: number) => {
     switch (value) {
@@ -153,7 +148,7 @@ const Dice: React.FC<DiceProps> = ({
         duration: isRolling ? 1 : 0.2,
         ease: "easeInOut",
       }}
-      onClick={handleRoll}
+      onClick={!disabled ? handleRoll : undefined}
     >
       <motion.span
         animate={{ 

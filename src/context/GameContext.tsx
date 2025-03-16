@@ -1,7 +1,30 @@
 'use client';
 
 import React, { createContext, useContext, useReducer } from 'react';
-import type { GameState, Player, Question, EventCard } from '../types/game';
+import { GameState, Player, Question, EventCard } from '../types/game';
+
+interface Player {
+  id: number;
+  name: string;
+  token: string;
+  position: number;
+  previousPosition: number;
+  startingPosition: number;
+  score: number;
+  isSkippingTurn: boolean;
+  moveHistory: number[]; // Track all positions visited
+}
+
+interface GameState {
+  players: Player[];
+  currentPlayerIndex: number;
+  currentQuestion: Question | null;
+  currentEvent: EventCard | null;
+  usedQuestionIds: Set<number>;
+  gameStarted: boolean;
+  gameEnded: boolean;
+  winner: Player | null;
+}
 
 type GameAction =
   | { type: 'START_GAME'; payload: Player[] }
@@ -21,12 +44,12 @@ const initialState: GameState = {
   currentPlayerIndex: 0,
   questions: [],
   events: [],
-  currentQuestion: null,
-  currentEvent: null,
   usedQuestionIds: new Set(),
   gameStarted: false,
   gameEnded: false,
-  winner: null
+  winner: null,
+  currentQuestion: null,
+  currentEvent: null
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -60,41 +83,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
 
     case 'MOVE_PLAYER':
-      console.log("GameReducer: Processing MOVE_PLAYER action with payload:", action.payload);
-      
-      // Validate the move payload
-      if (typeof action.payload !== 'number' || isNaN(action.payload)) {
-        console.error("GameReducer: Invalid move payload:", action.payload);
-        return state;
-      }
-
-      // Get current player
-      const currentPlayer = state.players[state.currentPlayerIndex];
-      if (!currentPlayer) {
-        console.error("GameReducer: No current player found");
-        return state;
-      }
-
-      // Calculate new position with bounds checking
-      const currentPosition = currentPlayer.position;
-      const moveAmount = action.payload;
-      const newPosition = Math.min(99, Math.max(0, currentPosition + moveAmount));
-
-      console.log("GameReducer: Moving player", {
-        playerId: currentPlayer.id,
-        currentPosition,
-        moveAmount,
-        newPosition
-      });
-
-      // Update player position with validation
       return {
         ...state,
         players: state.players.map(player => {
-          if (player.id === currentPlayer.id) {
+          if (player.id === state.players[state.currentPlayerIndex].id) {
+            const newPosition = Math.min(99, Math.max(0, player.position + action.payload));
             return {
               ...player,
-              previousPosition: currentPosition,
+              previousPosition: player.position,
               position: newPosition,
               moveHistory: [...player.moveHistory, newPosition]
             };

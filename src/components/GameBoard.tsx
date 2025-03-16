@@ -214,7 +214,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
     <div className="w-full h-full overflow-auto p-1 sm:p-2 md:p-4 game-board-container">
       <div className="relative w-full max-w-7xl mx-auto">
         {/* Board Legend */}
-        <div className="mb-2 sm:mb-4 flex flex-wrap gap-1 sm:gap-2 justify-center">
+        <div className="mb-2 sm:mb-4 flex flex-wrap gap-1 sm:gap-2 justify-center sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md py-2 rounded-lg">
           {legendItems.map((item) => (
             <LegendItem key={`${item.type}-${item.points}`} {...item} />
           ))}
@@ -222,7 +222,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         
         {/* Current Position Indicator */}
         {currentPlayerPosition > 0 && (
-          <div className="mb-2 sm:mb-4 flex justify-center">
+          <div className="mb-2 sm:mb-4 flex justify-center sticky top-14 z-10">
             <div className="px-3 py-1 bg-yellow-100/80 dark:bg-yellow-900/30 rounded-full text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 font-medium flex items-center gap-1 shadow-sm backdrop-blur-sm border border-yellow-200 dark:border-yellow-800/50">
               <span>{state.players[state.currentPlayerIndex].name}&apos;s Position:</span>
               <span className="font-bold">{currentPlayerPosition + 1}</span>
@@ -237,10 +237,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
         )}
         
         {/* Game Board Grid - Optimized 10x10 Layout */}
-        <div className="game-board glass-effect rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-4 shadow-xl border border-white/30 dark:border-gray-700/30 bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm">
+        <div className="game-board glass-effect rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-4 shadow-xl border border-white/30 dark:border-gray-700/30 bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm mb-20 sm:mb-10">
           {/* Grid Container with Fixed Aspect Ratio */}
           <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
-            <div className="absolute inset-0 grid grid-cols-10 gap-1 xs:gap-1.5 sm:gap-2">
+            <div className="absolute inset-0 grid grid-cols-10 gap-0.5 xs:gap-1 sm:gap-1.5 md:gap-2">
               {boardSpaces.map(({ space, actualIndex }) => {
                 // Find players on this space
                 const playersOnSpace = getPlayerTokens(space.id);

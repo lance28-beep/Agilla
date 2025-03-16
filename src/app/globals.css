@@ -315,16 +315,32 @@
 
 /* Ensure the root element doesn't scroll */
 html, body {
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-}
-
-/* Make the main content area scrollable if needed */
-main {
-  height: 100vh;
+  @apply h-full w-full;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+}
+
+/* Make the main content area scrollable */
+main {
+  @apply min-h-screen;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Game Board Container Styles */
+.game-board-container {
+  @apply w-full overflow-y-auto overflow-x-hidden;
+  -webkit-overflow-scrolling: touch;
+  max-height: none; /* Remove fixed height constraint */
+  padding-bottom: env(safe-area-inset-bottom); /* Handle iOS safe areas */
+}
+
+@media (max-width: 640px) {
+  .game-board-container {
+    @apply px-2 py-4;
+    height: auto;
+    min-height: 60vh;
+  }
 }
 
 /* Game Board Styles */
