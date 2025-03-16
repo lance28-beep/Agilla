@@ -30,15 +30,15 @@ const Dice: React.FC<DiceProps> = ({
   }, [rollInterval]);
 
   // Validate dice value
-  const validateDiceValue = (value: number): boolean => {
+  const validateDiceValue = useCallback((value: number): boolean => {
     return Number.isInteger(value) && value >= 1 && value <= 6;
-  };
+  }, []);
 
   // Generate valid dice value
-  const generateValidDiceValue = (): number => {
+  const generateValidDiceValue = useCallback((): number => {
     const value = Math.floor(Math.random() * 6) + 1;
     return validateDiceValue(value) ? value : 1; // Fallback to 1 if invalid
-  };
+  }, [validateDiceValue]);
 
   // Handle roll animation
   const handleRoll = useCallback(() => {

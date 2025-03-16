@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { Player } from '../types/game';
+import type { Player } from '../types/game';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface GameOverModalProps {
@@ -11,7 +11,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({ onRestart }) => {
   const { state } = useGame();
 
   // Sort players by score in descending order
-  const sortedPlayers = [...state.players].sort((a, b) => b.score - a.score);
+  const sortedPlayers: Player[] = [...state.players].sort((a, b) => b.score - a.score);
   const winner = sortedPlayers[0];
 
   // If there are no players, show a simple message
@@ -80,7 +80,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({ onRestart }) => {
         <div className="mb-4 sm:mb-6 md:mb-8">
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 sm:mb-3 md:mb-4">Final Ranking</h3>
           <div className="space-y-1 sm:space-y-2 max-h-[30vh] overflow-auto pr-1">
-            {sortedPlayers.map((player: Player, index: number) => (
+            {sortedPlayers.map((player, index) => (
               <motion.div
                 key={player.id}
                 initial={{ x: -20, opacity: 0 }}

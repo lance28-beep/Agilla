@@ -25,9 +25,12 @@ export interface Player {
   name: string;
   token: string;
   position: number;
+  previousPosition: number;
+  startingPosition: number;
   score: number;
   consecutiveWrongAnswers: number;
   isSkippingTurn: boolean;
+  moveHistory: number[]; // Track all positions visited
 }
 
 export interface GameState {
@@ -35,12 +38,12 @@ export interface GameState {
   currentPlayerIndex: number;
   questions: Question[];
   events: EventCard[];
+  currentQuestion: Question | null;
+  currentEvent: EventCard | null;
   usedQuestionIds: Set<number>;
   gameStarted: boolean;
   gameEnded: boolean;
   winner: Player | null;
-  currentQuestion: Question | null;
-  currentEvent: EventCard | null;
 }
 
 export type SpaceType = "question" | "start" | "finish";

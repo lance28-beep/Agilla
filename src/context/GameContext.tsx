@@ -3,29 +3,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { GameState, Player, Question, EventCard } from '../types/game';
 
-interface Player {
-  id: number;
-  name: string;
-  token: string;
-  position: number;
-  previousPosition: number;
-  startingPosition: number;
-  score: number;
-  isSkippingTurn: boolean;
-  moveHistory: number[]; // Track all positions visited
-}
-
-interface GameState {
-  players: Player[];
-  currentPlayerIndex: number;
-  currentQuestion: Question | null;
-  currentEvent: EventCard | null;
-  usedQuestionIds: Set<number>;
-  gameStarted: boolean;
-  gameEnded: boolean;
-  winner: Player | null;
-}
-
 type GameAction =
   | { type: 'START_GAME'; payload: Player[] }
   | { type: 'NEXT_PLAYER' }
