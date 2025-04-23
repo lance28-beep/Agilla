@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Providers } from '../components/Providers';
 import localFont from 'next/font/local';
 import { Inter } from 'next/font/google'
+import Footer from '../components/Footer';
 
 // Load Geist font locally
 const geistSans = localFont({
@@ -75,7 +76,10 @@ export default function RootLayout({
       >
         <Providers>
           <main className="flex min-h-screen flex-col">
-            {children}
+            <div className="flex-grow">
+              {children}
+            </div>
+            <Footer />
           </main>
         </Providers>
       </body>

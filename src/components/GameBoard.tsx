@@ -204,47 +204,54 @@ const GameBoard: React.FC<GameBoardProps> = ({
   }, [currentPlayerPosition, previousPosition, isReturningToPrevious]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-1 sm:px-2">
+    <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-6">
       {/* Board Legend */}
-      <div className="mb-1 sm:mb-2 flex flex-wrap gap-1 justify-center">
+      <div className="mb-3 sm:mb-4 flex flex-wrap gap-2 justify-center">
         {legendItems.map((item) => (
-          <div
+          <motion.div
             key={item.type}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full
-                     bg-white/80 dark:bg-gray-800/80 shadow-sm
-                     border border-gray-200 dark:border-gray-700
-                     text-xs text-gray-700 dark:text-gray-300"
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full
+                     bg-white/90 dark:bg-gray-800/90 shadow-md
+                     border border-gray-200/50 dark:border-gray-700/50
+                     text-sm text-gray-700 dark:text-gray-300
+                     backdrop-blur-sm transition-all duration-300"
           >
-            <span className="w-3 h-3 flex items-center justify-center rounded-full bg-blue-500/10">
+            <span className="w-5 h-5 flex items-center justify-center rounded-full 
+                         bg-gradient-to-br from-blue-500/20 to-purple-500/20">
               {item.type === 'start' ? '🚀' : item.type === 'finish' ? '🏁' : '❓'}
             </span>
-            <span>{item.label}</span>
-          </div>
+            <span className="font-medium">{item.label}</span>
+          </motion.div>
         ))}
       </div>
 
       {/* Current Position Indicator */}
       {currentPlayerPosition > 0 && (
-        <div className="mb-1 sm:mb-2 flex justify-center">
-          <div className="px-2 py-0.5 bg-yellow-100/80 dark:bg-yellow-900/30 
-                       rounded-full text-xs text-yellow-700 dark:text-yellow-300 
-                       font-medium flex items-center gap-1 shadow-sm backdrop-blur-sm 
-                       border border-yellow-200 dark:border-yellow-800/50">
-            <span>{state.players[state.currentPlayerIndex].name}</span>
-            <span className="font-bold">{currentPlayerPosition + 1}</span>
-            <span className="text-yellow-500">📍</span>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 sm:mb-4 flex justify-center"
+        >
+          <div className="px-4 py-2 bg-gradient-to-r from-yellow-100/90 to-yellow-200/90 dark:from-yellow-900/30 dark:to-yellow-800/30 
+                       rounded-full text-sm text-yellow-700 dark:text-yellow-300 
+                       font-medium flex items-center gap-2 shadow-lg backdrop-blur-sm 
+                       border border-yellow-200/50 dark:border-yellow-800/50">
+            <span className="font-semibold">{state.players[state.currentPlayerIndex].name}</span>
+            <span className="font-bold text-lg">{currentPlayerPosition + 1}</span>
+            <span className="text-yellow-500 animate-bounce">📍</span>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Game Board Grid */}
-      <div className="relative bg-gradient-to-br from-blue-500/5 to-purple-500/5 
-                    rounded-lg p-1 sm:p-1.5 overflow-hidden
-                    border border-white/10 dark:border-gray-800/10
-                    shadow-[inset_0_0_20px_rgba(0,0,0,0.1)]
-                    dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]">
+      <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 
+                    rounded-2xl p-2 sm:p-3 md:p-4 overflow-hidden
+                    border border-white/20 dark:border-gray-800/20
+                    shadow-[inset_0_0_30px_rgba(0,0,0,0.1)]
+                    dark:shadow-[inset_0_0_30px_rgba(255,255,255,0.05)]">
         {/* Grid Pattern Background */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full grid grid-cols-10 grid-rows-10">
             {Array.from({ length: 100 }).map((_, i) => (
               <div key={i} className="border border-gray-500/20" />
@@ -252,33 +259,37 @@ const GameBoard: React.FC<GameBoardProps> = ({
           </div>
         </div>
 
-        {/* Game Grid */}
-        <div className="relative grid grid-cols-10 gap-0.5 aspect-[10/2]">
-          {boardSpaces.map(({ space, actualIndex }) => {
-            const playersOnSpace = getPlayerTokens(space.id);
-            const isInteractive = canInteractWithSpace && space.id === currentPlayerPosition;
-
-            return (
+        {/* Board Spaces */}
+        <div className="relative grid grid-cols-10 gap-1 sm:gap-2">
+          {boardSpaces.map(({ space, row, col, actualIndex }) => (
+            <motion.div
+              key={actualIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: actualIndex * 0.01 }}
+              className="relative"
+            >
               <BoardSpace
-                key={space.id}
                 space={space}
-                isCurrentPosition={space.id === currentPlayerPosition}
-                canInteract={canInteractWithSpace}
-                playersOnSpace={playersOnSpace}
-                onSpaceClick={handleSpaceClick}
-                currentPlayerIndex={state.currentPlayerIndex}
-                onHover={() => setHoveredSpace(space.id)}
+                isCurrentPosition={actualIndex === displayPosition}
+                isPreviousPosition={actualIndex === previousPosition}
+                isHovered={hoveredSpace === actualIndex}
+                onHover={() => setHoveredSpace(actualIndex)}
                 onLeave={() => setHoveredSpace(null)}
-                isHovered={hoveredSpace === space.id}
-                isInteractive={isInteractive}
+                onClick={() => handleSpaceClick(space)}
+                players={getPlayerTokens(actualIndex)}
+                isAnimating={isAnimating}
               />
-            );
-          })}
+            </motion.div>
+          ))}
         </div>
       </div>
 
       {/* Roll Prompt Dialog */}
-      <RollPromptDialog isOpen={showRollPrompt} onClose={() => setShowRollPrompt(false)} />
+      <RollPromptDialog
+        isOpen={showRollPrompt}
+        onClose={() => setShowRollPrompt(false)}
+      />
     </div>
   );
 };

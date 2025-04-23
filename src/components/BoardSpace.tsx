@@ -43,30 +43,29 @@ export const useSpaceStyles = (type: string): string => {
 interface BoardSpaceProps {
   space: Space;
   isCurrentPosition: boolean;
-  canInteract: boolean;
-  playersOnSpace: Player[];
-  onSpaceClick: (space: Space) => void;
-  currentPlayerIndex: number;
-  onHover?: () => void;
-  onLeave?: () => void;
-  isHovered?: boolean;
-  isInteractive?: boolean;
+  isPreviousPosition: boolean;
+  isHovered: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+  onClick: () => void;
+  players: Player[];
+  isAnimating: boolean;
 }
 
 const BoardSpace: React.FC<BoardSpaceProps> = ({
   space,
   isCurrentPosition,
-  canInteract,
-  playersOnSpace,
-  onSpaceClick,
-  currentPlayerIndex,
+  isPreviousPosition,
+  isHovered,
   onHover,
   onLeave,
-  isHovered,
-  isInteractive
+  onClick,
+  players,
+  isAnimating
 }) => {
   const spaceStyles = useSpaceStyles(space.type);
   const isSpecialSpace = space.type === 'start' || space.type === 'finish';
+  const isInteractive = isCurrentPosition && !isSpecialSpace;
 
   return (
     <motion.div
@@ -74,22 +73,34 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
         relative aspect-[4/3] group
         ${isInteractive ? 'cursor-pointer' : 'cursor-default'}
       `}
-      onClick={() => onSpaceClick(space)}
+      onClick={onClick}
       onHoverStart={onHover}
       onHoverEnd={onLeave}
       whileHover={isInteractive ? { scale: 1.05 } : {}}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {/* Base Space */}
-      <div className={`
-        absolute inset-0 rounded-md overflow-hidden
-        bg-gradient-to-br ${spaceStyles}
-        transition-all duration-300 ease-in-out
-        ${isCurrentPosition ? 'ring-1 ring-white/50 dark:ring-white/30 shadow-md' : ''}
-        ${isHovered ? 'shadow-lg scale-[1.02]' : 'shadow-sm'}
-        ${isInteractive ? 'hover:shadow-lg hover:scale-[1.02]' : ''}
-        backdrop-blur-sm
-      `}>
+      <motion.div 
+        className={`
+          absolute inset-0 rounded-lg overflow-hidden
+          bg-gradient-to-br ${spaceStyles}
+          transition-all duration-300 ease-in-out
+          ${isCurrentPosition ? 'ring-2 ring-white/50 dark:ring-white/30 shadow-lg' : ''}
+          ${isPreviousPosition ? 'ring-1 ring-yellow-400/50 dark:ring-yellow-400/30' : ''}
+          ${isHovered ? 'shadow-xl scale-[1.02]' : 'shadow-md'}
+          ${isInteractive ? 'hover:shadow-xl hover:scale-[1.02]' : ''}
+          backdrop-blur-sm
+        `}
+        animate={{
+          scale: isAnimating ? [1, 1.05, 1] : 1,
+          rotate: isAnimating ? [0, 5, -5, 0] : 0
+        }}
+        transition={{
+          duration: 0.5,
+          repeat: isAnimating ? Infinity : 0,
+          repeatType: "reverse"
+        }}
+      >
         {/* Glass Effect Overlay */}
         <div className="absolute inset-0 bg-white/10 dark:bg-black/10" />
         
@@ -105,40 +116,64 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
         {/* Content Container */}
         <div className="relative h-full flex items-center justify-center p-1">
           {/* Space Icon */}
-          <div className={`
-            text-lg xs:text-xl sm:text-2xl
-            ${isSpecialSpace ? 'animate-bounce' : 'group-hover:scale-110'}
-            transition-transform duration-300
-          `}>
+          <motion.div 
+            className={`
+              text-lg xs:text-xl sm:text-2xl
+              ${isSpecialSpace ? 'animate-bounce' : ''}
+              transition-transform duration-300
+            `}
+            animate={{
+              scale: isHovered ? [1, 1.2, 1] : 1,
+              rotate: isHovered ? [0, 15, -15, 0] : 0
+            }}
+            transition={{
+              duration: 2,
+              repeat: isHovered ? Infinity : 0,
+              repeatType: "reverse"
+            }}
+          >
             {space.type === 'start' ? '🚀' :
              space.type === 'finish' ? '🏁' :
              space.type === 'question' ? '❓' : '🎲'}
-          </div>
+          </motion.div>
 
           {/* Space Number */}
-          <div className="absolute bottom-0.5 right-0.5 text-[8px] xs:text-[10px] 
-                        font-medium text-white/70 dark:text-white/50">
+          <div className="absolute bottom-1 right-1 text-[8px] xs:text-[10px] 
+                        font-medium text-white/70 dark:text-white/50
+                        bg-black/20 dark:bg-white/10 px-1 rounded">
             {space.id + 1}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Player Tokens */}
-      {playersOnSpace.length > 0 && (
+      {players.length > 0 && (
         <div className="absolute -top-1 -left-1 flex flex-wrap gap-0.5 max-w-[150%] z-10">
-          {playersOnSpace.map((player) => (
+          {players.map((player) => (
             <motion.div
               key={player.id}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0, y: -10 }}
+              animate={{ 
+                scale: 1,
+                y: 0,
+                rotate: isCurrentPosition ? [0, 5, -5, 0] : 0
+              }}
+              transition={{
+                duration: 0.3,
+                rotate: {
+                  duration: 2,
+                  repeat: isCurrentPosition ? Infinity : 0,
+                  repeatType: "reverse"
+                }
+              }}
               className={`
                 w-4 h-4 xs:w-5 xs:h-5
                 rounded-full flex items-center justify-center
                 text-[8px] xs:text-[10px] font-bold
-                border border-white/50 shadow-sm
-                ${player.id - 1 === currentPlayerIndex
-                  ? 'bg-yellow-400 text-yellow-900 animate-pulse'
-                  : 'bg-gray-200 text-gray-600'}
+                border-2 border-white/50 shadow-md
+                ${player.id === players[0].id
+                  ? 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900'
+                  : 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600'}
               `}
             >
               {player.token}
@@ -150,12 +185,12 @@ const BoardSpace: React.FC<BoardSpaceProps> = ({
       {/* Interactive Indicator */}
       {isInteractive && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
           className="absolute -bottom-1 left-1/2 transform -translate-x-1/2
                      text-[8px] text-white font-medium
-                     px-1.5 py-0.5 rounded-full bg-green-500/80
-                     shadow-sm backdrop-blur-sm"
+                     px-2 py-0.5 rounded-full bg-green-500/90
+                     shadow-lg backdrop-blur-sm border border-white/20"
         >
           Click
         </motion.div>

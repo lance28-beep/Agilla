@@ -621,66 +621,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white/90 dark:bg-gray-800/90 shadow-lg backdrop-blur-sm border-t border-white/20 dark:border-gray-700/20 py-4 mt-auto">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-center text-center space-y-4">
-            {/* Game Information */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
-              {[
-                { letter: 'AP', word: 'Araling Panlipunan', icon: '📚', color: 'from-blue-500 to-indigo-600', bgHover: 'from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20' },
-                { letter: 'GILA', word: 'Game-based Interactive Learning Activities', icon: '🎮', color: 'from-purple-500 to-pink-600', bgHover: 'from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20' },
-                { letter: 'EKO9', word: 'Ekonomiks Grade 9', icon: '✨', color: 'from-amber-500 to-yellow-600', bgHover: 'from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/20' },
-              ].map(({ letter, word, icon, color, bgHover }, index) => (
-                <div 
-                  key={index}
-                  className={`flex flex-col items-center justify-center p-3 group hover:bg-gradient-to-r ${bgHover} transition-all duration-300 relative overflow-hidden rounded-lg`}
-                >
-                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${color} opacity-70 transition-all duration-300 group-hover:h-1.5`}></div>
-                  
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mb-2 flex items-center justify-center text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r ${color} text-white rounded-xl shadow-md group-hover:scale-110 transition-all duration-300`}>
-                    {letter}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 text-center line-clamp-1">
-                      {word}
-                    </span>
-                    <span className="text-base sm:text-lg md:text-xl animate-float">
-                      {icon}
-                    </span>
-                  </div>
-                  
-                  <div className="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center max-w-[200px] opacity-80 group-hover:opacity-100 transition-opacity line-clamp-1">
-                    {index === 0 && "Philippine Social Studies"}
-                    {index === 1 && "Interactive Educational Gaming"}
-                    {index === 2 && "Economics for Freshmen"}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Developer Information */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                Developed by{' '}
-                <a
-                  href="https://lance28-beep.github.io/portfolio-website"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 font-medium transition-colors hover:underline"
-                >
-                  Lance
-                </a>
-                {' '} | {' '}
-                <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
-                  Requested by: Maam Lyne C. Villegas
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
