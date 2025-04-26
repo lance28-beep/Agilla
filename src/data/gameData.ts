@@ -5,212 +5,212 @@ const questionsByDifficulty: Record<GameDifficulty, Question[]> = {
   beginner: [
     {
       id: 1,
-      text: "Ito ang tumutukoy sa alternatibong isinuko mo sa iyong pagpili.",
+      text: "This refers to the alternative that you gave up in your choice.",
       options: ["Marginal Thinking", "Trade-off", "Opportunity Cost", "Incentives"],
       correctAnswer: "Opportunity Cost",
       category: "Opportunity Cost",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang opportunity cost ay ang pinakamahalagang alternatibong isinuko natin sa ating pagpili."
+      explanation: "Opportunity cost is the most important alternative that we give up in our choice."
     },
     {
       id: 2,
-      text: "Pinili ni Ana na mag-aral kaysa manood ng sine. Ano ang opportunity cost sa kanyang desisyon?",
-      options: ["Oras na ginugol sa pag-aaral", "Pera para sa sine", "Kasiyahan sa panonood ng sine", "Gastos sa pagkain"],
-      correctAnswer: "Kasiyahan sa panonood ng sine",
+      text: "Ana chose to study instead of watching a movie. What is the opportunity cost of her decision?",
+      options: ["Time spent studying", "Money for the movie", "Enjoyment from watching the movie", "Food expenses"],
+      correctAnswer: "Enjoyment from watching the movie",
       category: "Opportunity Cost",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang kasiyahan sa panonood ng sine ang naisuko ni Ana nang pinili niyang mag-aral."
+      explanation: "The enjoyment from watching the movie is what Ana gave up when she chose to study."
     },
     {
       id: 3,
-      text: "Ang isang magsasaka ay nagdesisyon na magtanim ng palay sa halip na mais. Ano ang opportunity cost?",
-      options: ["Kita sa pagtatanim ng palay", "Gastos sa pagbili ng binhi", "Kita mula sa mais", "Oras ng pagtatanim"],
-      correctAnswer: "Kita mula sa mais",
+      text: "A farmer decided to plant rice instead of corn. What is the opportunity cost?",
+      options: ["Income from planting rice", "Cost of buying seeds", "Income from corn", "Time spent planting"],
+      correctAnswer: "Income from corn",
       category: "Opportunity Cost",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang kita na maaaring makuha sa mais ang opportunity cost ng pagpiling magtanim ng palay."
+      explanation: "The income that could have been earned from corn is the opportunity cost of choosing to plant rice."
     },
     {
       id: 4,
-      text: "Ang pagpili ng kurso sa kolehiyo ay isang halimbawa ng:",
+      text: "Choosing a course in college is an example of:",
       options: ["Trade-off", "Scarcity", "Opportunity Cost", "Incentives"],
       correctAnswer: "Opportunity Cost",
       category: "Opportunity Cost",
       difficulty: "easy",
       points: 1,
-      explanation: "Kapag pumili ka ng isang kurso, may mga alternatibong kurso kang isinuko."
+      explanation: "When you choose a course, you give up alternative courses."
     },
     {
       id: 5,
-      text: "Kapag naglaan ng oras sa paglalaro imbis na mag-aral, ang opportunity cost ay:",
-      options: ["Kasiyahan sa paglalaro", "Marka sa pagsusulit", "Pera sa internet", "Oras sa pamilya"],
-      correctAnswer: "Marka sa pagsusulit",
+      text: "When you spend time playing instead of studying, the opportunity cost is:",
+      options: ["Enjoyment from playing", "Grades in the exam", "Money for internet", "Family time"],
+      correctAnswer: "Grades in the exam",
       category: "Opportunity Cost",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang marka na maaari sanang makuha sa pagsusulit ang naisuko sa pagpiling maglaro."
+      explanation: "The grades that could have been achieved in the exam were given up by choosing to play."
     },
     {
       id: 6,
-      text: "Ang pagtanggap ng mas mababang sweldo kapalit ng mas maikling oras ng trabaho ay halimbawa ng:",
+      text: "Accepting lower pay in exchange for shorter working hours is an example of:",
       options: ["Trade-off", "Scarcity", "Opportunity Cost", "Incentives"],
       correctAnswer: "Trade-off",
       category: "Trade-off",
       difficulty: "easy",
       points: 1,
-      explanation: "Ito ay trade-off dahil may pagpapalitan ng benepisyo at kapalit nito."
+      explanation: "This is a trade-off because there is an exchange of benefits and their corresponding costs."
     },
     {
       id: 7,
-      text: "Kapag pinili mong bumili ng cellphone imbis na damit, ano ang trade-off?",
-      options: ["Oras sa pag-aaral", "Pera para sa damit", "Pera para sa pagkain", "Oras sa paglalaro"],
-      correctAnswer: "Pera para sa damit",
+      text: "If you choose to buy a cellphone instead of clothes, what is the trade-off?",
+      options: ["Time for studying", "Money for clothes", "Money for food", "Time for playing"],
+      correctAnswer: "Money for clothes",
       category: "Trade-off",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang pera na sana ay pambili ng damit ang trade-off sa pagpiling bumili ng cellphone."
+      explanation: "The money that could have been spent on clothes is the trade-off for choosing to buy a cellphone."
     },
     {
       id: 8,
-      text: "Ang desisyong mag-ipon kaysa gumastos ay isang halimbawa ng:",
+      text: "The decision to save instead of spending is an example of:",
       options: ["Trade-off", "Marginal Thinking", "Opportunity Cost", "Incentives"],
       correctAnswer: "Trade-off",
       category: "Trade-off",
       difficulty: "easy",
       points: 1,
-      explanation: "May kapalit na kasiyahan sa paggastos ang desisyong mag-ipon."
+      explanation: "The decision to save has a corresponding enjoyment from spending."
     },
     {
       id: 9,
-      text: "Sa paggawa ng desisyon, ang pagtalikod sa isang pagpipilian ay tinatawag na:",
+      text: "In decision-making, giving up one option is called:",
       options: ["Incentives", "Scarcity", "Trade-off", "Marginal Thinking"],
       correctAnswer: "Trade-off",
       category: "Trade-off",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang trade-off ay ang pagtalikod o pagsuko sa isang bagay para makuha ang isa pa."
+      explanation: "Trade-off is giving up or surrendering one thing to get another."
     },
     {
       id: 10,
-      text: "Ang pagsusuri kung sulit bang bumili ng dagdag na pizza ay halimbawa ng:",
+      text: "Analyzing whether it's worth buying an extra pizza is an example of:",
       options: ["Trade-off", "Marginal Thinking", "Opportunity Cost", "Incentives"],
       correctAnswer: "Marginal Thinking",
       category: "Marginal Thinking",
       difficulty: "easy",
       points: 1,
-      explanation: "Ang pagsusuri ng karagdagang benepisyo o halaga ay marginal thinking."
+      explanation: "Analyzing additional benefits or value is marginal thinking."
     }
   ],
   intermediate: [
     {
       id: 11,
-      text: "Kapag iniisip kung sulit ang karagdagang gastos para sa premium subscription, ito ay:",
+      text: "When considering if the extra cost for a premium subscription is worth it, this is:",
       options: ["Trade-off", "Marginal Thinking", "Opportunity Cost", "Incentives"],
       correctAnswer: "Marginal Thinking",
       category: "Marginal Thinking",
       difficulty: "medium",
       points: 2,
-      explanation: "Ang pagsusuri ng karagdagang benepisyo o halaga ng premium subscription ay marginal thinking."
+      explanation: "Analyzing the additional benefits or value of a premium subscription is marginal thinking."
     },
     {
       id: 12,
-      text: "Ang pagsusuri kung sulit bang mag-overtime ay halimbawa ng:",
+      text: "Analyzing whether it's worth working overtime is an example of:",
       options: ["Trade-off", "Marginal Thinking", "Opportunity Cost", "Scarcity"],
       correctAnswer: "Marginal Thinking",
       category: "Marginal Thinking",
       difficulty: "medium",
       points: 2,
-      explanation: "Ang pagsusuri ng karagdagang benepisyo o halaga ng overtime ay marginal thinking."
+      explanation: "Analyzing the additional benefits or value of overtime is marginal thinking."
     },
     {
       id: 13,
-      text: "Ang pagtanggap ng dagdag na sahod para sa overtime ay isang halimbawa ng:",
+      text: "Receiving additional pay for overtime is an example of:",
       options: ["Opportunity Cost", "Trade-off", "Incentives", "Scarcity"],
       correctAnswer: "Incentives",
       category: "Incentives",
       difficulty: "medium",
       points: 2,
-      explanation: "Ang dagdag na sahod ay nagsisilbing incentive o motivation para mag-overtime."
+      explanation: "The additional salary serves as an incentive or motivation to work overtime."
     },
     {
       id: 14,
-      text: "Kapag nagbigay ang gobyerno ng diskwento sa buwis para sa mga negosyante, ito ay:",
+      text: "When the government gives tax discounts to entrepreneurs, this is:",
       options: ["Opportunity Cost", "Trade-off", "Incentives", "Scarcity"],
       correctAnswer: "Incentives",
       category: "Incentives",
       difficulty: "medium",
       points: 2,
-      explanation: "Ang diskwento sa buwis ay incentive para hikayatin ang mga negosyante."
+      explanation: "The tax discount is an incentive to encourage entrepreneurs."
     },
     {
       id: 15,
-      text: "Ang pagbibigay ng bonus para sa maagang pagbabayad ng utang ay:",
+      text: "Giving a bonus for early debt payment is:",
       options: ["Trade-off", "Incentives", "Scarcity", "Opportunity Cost"],
       correctAnswer: "Incentives",
       category: "Incentives",
       difficulty: "medium",
       points: 2,
-      explanation: "Ang bonus ay incentive para hikayatin ang maagang pagbabayad."
+      explanation: "The bonus is an incentive to encourage early payment."
     }
   ],
   expert: [
     {
       id: 16,
-      text: "Ang mga pagpipilian sa paggawa ng desisyon ay may magandang dulot. Ano ito?",
+      text: "The positive outcomes of choices in decision-making are called:",
       options: ["Marginal Thinking", "Trade-off", "Opportunity Cost", "Incentives"],
       correctAnswer: "Incentives",
       category: "Incentives",
       difficulty: "hard",
       points: 3,
-      explanation: "Ang incentives ay mga positibong dulot o motivation sa paggawa ng desisyon."
+      explanation: "Incentives are positive outcomes or motivations in decision-making."
     },
     {
       id: 17,
-      text: "Ang limitadong suplay ng bigas sa merkado ay isang halimbawa ng:",
+      text: "The limited supply of rice in the market is an example of:",
       options: ["Trade-off", "Incentives", "Scarcity", "Opportunity Cost"],
       correctAnswer: "Scarcity",
       category: "Scarcity",
       difficulty: "hard",
       points: 3,
-      explanation: "Ang limitadong suplay ng bigas ay nagpapakita ng scarcity o kakulangan."
+      explanation: "The limited supply of rice shows scarcity or shortage."
     },
     {
       id: 18,
-      text: "Kapag maraming nagnanais ngunit kakaunti ang suplay, ito ay:",
+      text: "When there is high demand but low supply, this is:",
       options: ["Trade-off", "Scarcity", "Opportunity Cost", "Incentives"],
       correctAnswer: "Scarcity",
       category: "Scarcity",
       difficulty: "hard",
       points: 3,
-      explanation: "Ang hindi pagtugma ng demand at supply ay scarcity."
+      explanation: "The mismatch between demand and supply is scarcity."
     },
     {
       id: 19,
-      text: "Ang limitadong bilang ng classroom sa paaralan ay halimbawa ng:",
+      text: "The limited number of classrooms in a school is an example of:",
       options: ["Opportunity Cost", "Scarcity", "Trade-off", "Incentives"],
       correctAnswer: "Scarcity",
       category: "Scarcity",
       difficulty: "hard",
       points: 3,
-      explanation: "Ang limitadong bilang ng classroom ay halimbawa ng scarcity o kakulangan ng resources."
+      explanation: "The limited number of classrooms is an example of scarcity or shortage of resources."
     },
     {
       id: 20,
-      text: "Ano ang pangunahing sanhi ng pagkakaroon ng scarcity?",
+      text: "What is the main cause of scarcity?",
       options: [
-        "Walang katapusang kagustuhan at limitadong pinagkukunang-yaman",
-        "Sobrang produksyon ng mga produkto",
-        "Mababang presyo ng bilihin",
-        "Walang kontrol sa pondo ng gobyerno"
+        "Unlimited wants and limited resources",
+        "Overproduction of goods",
+        "Low prices of commodities",
+        "Lack of control over government funds"
       ],
-      correctAnswer: "Walang katapusang kagustuhan at limitadong pinagkukunang-yaman",
+      correctAnswer: "Unlimited wants and limited resources",
       category: "Scarcity",
       difficulty: "hard",
       points: 3,
-      explanation: "Ang hindi pagtugma ng unlimited wants at limited resources ang pangunahing sanhi ng scarcity."
+      explanation: "The mismatch between unlimited wants and limited resources is the main cause of scarcity."
     }
   ]
 };
@@ -220,13 +220,13 @@ const eventsByDifficulty: Record<GameDifficulty, EventCard[]> = {
   beginner: [
     {
       id: 1,
-      description: 'Magandang desisyon! Sumulong ng 2 spaces',
+      description: 'Great decision! Move forward 2 spaces',
       effect: 'move',
       value: 2
     },
     {
       id: 2,
-      description: 'May pagkakamali! Umurong ng 1 space',
+      description: 'Mistake made! Move back 1 space',
       effect: 'move',
       value: -1
     }
@@ -234,13 +234,13 @@ const eventsByDifficulty: Record<GameDifficulty, EventCard[]> = {
   intermediate: [
     {
       id: 3,
-      description: 'Mahusay na pag-iisip! Sumulong ng 3 spaces',
+      description: 'Excellent thinking! Move forward 3 spaces',
       effect: 'move',
       value: 3
     },
     {
       id: 4,
-      description: 'Hindi tama ang desisyon! Umurong ng 2 spaces',
+      description: 'Incorrect decision! Move back 2 spaces',
       effect: 'move',
       value: -2
     }
@@ -248,13 +248,13 @@ const eventsByDifficulty: Record<GameDifficulty, EventCard[]> = {
   expert: [
     {
       id: 5,
-      description: 'Napakahusay! Sumulong ng 4 spaces',
+      description: 'Outstanding performance! Move forward 4 spaces',
       effect: 'move',
       value: 4
     },
     {
       id: 6,
-      description: 'Mali ang strategy! Umurong ng 3 spaces',
+      description: 'Strategy error! Move back 3 spaces',
       effect: 'move',
       value: -3
     }

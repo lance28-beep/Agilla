@@ -74,13 +74,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         <div className={`p-4 bg-gradient-to-r ${categoryColor.bg} ${categoryColor.text}`}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold mb-1">Tanong #{question.id}</h3>
+              <h3 className="text-lg font-bold mb-1">Question #{question.id}</h3>
               <div className="flex items-center gap-2 text-sm">
                 <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm">
                   {question.category}
                 </span>
                 <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                  {question.points} puntos
+                  {question.points} points
                 </span>
               </div>
             </div>
@@ -148,7 +148,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300
                        hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              Isara
+              Close
             </button>
             <button
               onClick={handleAnswerSubmit}
@@ -161,7 +161,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 }
               `}
             >
-              Ipasa
+              Submit
             </button>
           </div>
 
@@ -176,7 +176,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               `}
             >
               <h4 className={`font-bold mb-2 ${isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                Paliwanag:
+                Explanation:
               </h4>
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 {question.explanation}
