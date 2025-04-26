@@ -145,9 +145,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   // Memoize legend items for better performance
   const legendItems = useMemo(() => [
-    { type: 'start', points: 0, label: 'Simula' },
-    { type: 'finish', points: 0, label: 'Tapos' },
-    { type: 'question', points: 1, label: 'Tanong' },
+    { type: 'start', points: 0, label: 'Start' },
+    { type: 'finish', points: 0, label: 'Finish' },
+    { type: 'question', points: 1, label: 'Question' },
   ], []);
 
   // Memoize the board spaces to prevent unnecessary re-renders
